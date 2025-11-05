@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NFL Trip Planner — Sprint 1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header>
+    <h1>NFL Teams</h1>
+    <div class="controls">
+      <input id="searchInput" placeholder="Search team by name" />
+      <button id="filterAll">All</button>
+      <button id="filterAFC">AFC</button>
+      <button id="filterNFC">NFC</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Teams</h2>
+      <table id="team-table">
+        <thead>
+          <tr><th>Team</th><th>Conference</th><th>Division</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="team-detail">
+      <h2>Team Detail</h2>
+      <div class="content muted">Select a team to view details.</div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Sprint 1: custom map, team list, detail view</small>
+  </footer>
+
+  <script type="module" src="./scripts/main.js"></script>
+</body>
+</html>
