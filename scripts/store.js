@@ -42,3 +42,27 @@ export function getTeamByName(name) {
 export function getStadiumById(id) {
   return stadiumById.get(id);
 }
+
+export function getStadiumTeamPairs() {
+  const sortedTeams = mapByTeamName
+    .sortedKeys()
+    .map(name => mapByTeamName.find(name))
+    .filter(Boolean);
+
+  const teamsByStadium = new Map();
+  sortedTeams.forEach(team => {
+    const bucket = teamsByStadium.get(team.stadiumId);
+    if (bucket) {
+      bucket.push(team);
+    } else {
+      teamsByStadium.set(team.stadiumId, [team]);
+    }
+  });
+
+  return Array.from(stadiumById.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(stadium => ({
+      stadium,
+      teams: teamsByStadium.get(stadium.id) ?? []
+    }));
+}

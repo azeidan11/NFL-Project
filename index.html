@@ -18,20 +18,44 @@
   </header>
 
   <main>
-    <section class="panel">
-      <h2>Teams</h2>
-      <table id="team-table">
-        <thead>
-          <tr><th>Team</th><th>Conference</th><th>Division</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
+    <div class="tab-nav">
+      <button data-tab-target="teams" class="active">Teams</button>
+      <button data-tab-target="stadiums">Stadiums</button>
+    </div>
 
-    <section class="panel" id="team-detail">
-      <h2>Team Detail</h2>
-      <div class="content muted">Select a team to view details.</div>
-    </section>
+    <div class="tab-panel active" data-tab="teams">
+      <section class="panel">
+        <h2>Teams</h2>
+        <table id="team-table" data-clickable="true">
+          <thead>
+            <tr><th>Team</th><th>Conference</th><th>Division</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="panel" id="team-detail">
+        <h2>Team Detail</h2>
+        <div class="content muted">Select a team to view details.</div>
+      </section>
+    </div>
+
+    <div class="tab-panel" data-tab="stadiums" hidden>
+      <section class="panel" id="stadium-panel">
+        <div class="panel-header">
+          <h2>Stadiums</h2>
+          <input id="stadiumSearchInput" placeholder="Search stadium by name" />
+        </div>
+        <table id="stadium-table">
+          <thead>
+            <tr><th>Stadium</th><th>Team(s)</th><th>Location</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="muted">Loading stadiums...</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
   </main>
 
   <footer>

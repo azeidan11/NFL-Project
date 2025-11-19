@@ -1,5 +1,6 @@
 import { renderTeamList } from "./ui-team-list.js";
 import { renderTeamDetail } from "./ui-team-detail.js";
+import { renderStadiumList } from "./ui-stadium-list.js";
 import { mapByTeamName, ensureStoreLoaded } from "./store.js"; // add mapByTeamName
 
 let currentFilter = "ALL";
@@ -38,6 +39,34 @@ function wireControls() {
   window.addEventListener("team:selected", e => {
     renderTeamDetail(e.detail.name);
   });
+
+  const tabButtons = document.querySelectorAll("[data-tab-target]");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+  const stadiumSearch = document.getElementById("stadiumSearchInput");
+
+  const switchTab = target => {
+    tabButtons.forEach(btn => {
+      const isActive = btn.dataset.tabTarget === target;
+      btn.classList.toggle("active", isActive);
+    });
+    tabPanels.forEach(panel => {
+      const isActive = panel.dataset.tab === target;
+      panel.classList.toggle("active", isActive);
+      panel.hidden = !isActive;
+    });
+    if (target === "stadiums" && stadiumSearch) {
+      stadiumSearch.focus();
+    }
+  };
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tabTarget));
+  });
+  switchTab("teams");
+
+  stadiumSearch?.addEventListener("input", () => {
+    renderStadiumList(stadiumSearch.value);
+  });
 }
 
 async function init() {
@@ -54,6 +83,7 @@ async function init() {
 
   wireControls();
   renderTeamList(currentFilter);
+  renderStadiumList();
   // renderTeamDetail("Green Bay Packers"); // optional default
 }
 
