@@ -1,6 +1,6 @@
 import { renderTeamList } from "./ui-team-list.js";
 import { renderTeamDetail } from "./ui-team-detail.js";
-import { getTeamByName, mapByTeamName } from "./store.js"; // add mapByTeamName
+import { mapByTeamName, ensureStoreLoaded } from "./store.js"; // add mapByTeamName
 
 let currentFilter = "ALL";
 
@@ -40,8 +40,23 @@ function wireControls() {
   });
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+async function init() {
+  try {
+    await ensureStoreLoaded();
+  } catch (err) {
+    console.error("Failed to load team data:", err);
+    const detailEl = document.querySelector("#team-detail .content");
+    if (detailEl) {
+      detailEl.innerHTML = `<p class="muted">Unable to load NFL data. Please refresh and try again.</p>`;
+    }
+    return;
+  }
+
   wireControls();
   renderTeamList(currentFilter);
   // renderTeamDetail("Green Bay Packers"); // optional default
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  init();
 });
