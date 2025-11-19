@@ -37,7 +37,8 @@ export function getTeamsSorted(conference = "ALL") {
 }
 
 export function getTeamsFiltered(options = {}) {
-  const { conference = "ALL", division } = options;
+  const opts = options ?? {};
+  const { conference = "ALL", division } = opts;
   const teams = getTeamsSorted(conference);
   if (!division) return teams;
   return teams.filter(team => team.division === division);

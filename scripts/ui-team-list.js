@@ -1,12 +1,14 @@
 import { getTeamsFiltered, NFC_NORTH_FILTER } from "./store.js";
 
-export function renderTeamList() {
+export function renderTeamList(filter = null) {
   const tbody = document.querySelector("#team-table tbody");
-  const teams = getTeamsFiltered(NFC_NORTH_FILTER);
+  const appliedFilter = filter ?? {};
+  const teams = Object.keys(appliedFilter).length ? getTeamsFiltered(appliedFilter) : getTeamsFiltered();
   if (!tbody) return;
 
   if (!teams.length) {
-    tbody.innerHTML = `<tr><td colspan="3" class="muted">No NFC North teams found.</td></tr>`;
+    const label = appliedFilter?.division ? `${appliedFilter.conference} ${appliedFilter.division}` : "teams";
+    tbody.innerHTML = `<tr><td colspan="3" class="muted">No ${label} found.</td></tr>`;
     return;
   }
 

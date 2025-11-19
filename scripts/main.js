@@ -3,8 +3,22 @@ import { renderTeamDetail } from "./ui-team-detail.js";
 import { renderStadiumList } from "./ui-stadium-list.js";
 import { ensureStoreLoaded, getTeamsFiltered, NFC_NORTH_FILTER } from "./store.js";
 
+const TEAM_FILTERS = {
+  all: null,
+  afc: { conference: "AFC" },
+  nfc: { conference: "NFC" },
+  nfcNorth: NFC_NORTH_FILTER
+};
+
+let currentTeamFilterKey = "all";
+let currentTeamFilter = TEAM_FILTERS[currentTeamFilterKey];
+
 function wireControls() {
   const search = document.getElementById("searchInput");
+  const btnAllTeams = document.getElementById("filterAllTeams");
+  const btnAfc = document.getElementById("filterAFC");
+  const btnNfc = document.getElementById("filterNFC");
+  const btnNfcNorth = document.getElementById("filterNfcNorth");
 
   // case insensitive partial search on Enter
   search.addEventListener("keydown", e => {
@@ -12,7 +26,9 @@ function wireControls() {
       const q = search.value.trim().toLowerCase();
       if (!q) return;
 
-      const allowedTeams = getTeamsFiltered(NFC_NORTH_FILTER);
+      const filter = currentTeamFilter ?? {};
+      const hasFilter = filter && Object.keys(filter).length > 0;
+      const allowedTeams = hasFilter ? getTeamsFiltered(filter) : getTeamsFiltered();
       const allowedNames = allowedTeams.map(team => team.name);
       const found = allowedNames.find(name => name.toLowerCase().includes(q));
 
@@ -28,6 +44,33 @@ function wireControls() {
   window.addEventListener("team:selected", e => {
     renderTeamDetail(e.detail.name);
   });
+
+  const filterButtons = {
+    all: btnAllTeams,
+    afc: btnAfc,
+    nfc: btnNfc,
+    nfcNorth: btnNfcNorth
+  };
+
+  const updateFilterButtons = key => {
+    Object.entries(filterButtons).forEach(([name, btn]) => {
+      if (!btn) return;
+      btn.classList.toggle("active", name === key);
+    });
+  };
+
+  const applyFilter = key => {
+    currentTeamFilterKey = key;
+    currentTeamFilter = TEAM_FILTERS[key] ?? null;
+    updateFilterButtons(key);
+    renderTeamList(currentTeamFilter);
+  };
+
+  btnAllTeams?.addEventListener("click", () => applyFilter("all"));
+  btnAfc?.addEventListener("click", () => applyFilter("afc"));
+  btnNfc?.addEventListener("click", () => applyFilter("nfc"));
+  btnNfcNorth?.addEventListener("click", () => applyFilter("nfcNorth"));
+  updateFilterButtons(currentTeamFilterKey);
 
   const tabButtons = document.querySelectorAll("[data-tab-target]");
   const tabPanels = document.querySelectorAll(".tab-panel");
@@ -71,7 +114,7 @@ async function init() {
   }
 
   wireControls();
-  renderTeamList();
+  renderTeamList(currentTeamFilter);
   renderStadiumList();
   // renderTeamDetail("Green Bay Packers"); // optional default
 }
