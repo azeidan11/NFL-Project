@@ -1,19 +1,10 @@
 import { renderTeamList } from "./ui-team-list.js";
 import { renderTeamDetail } from "./ui-team-detail.js";
 import { renderStadiumList } from "./ui-stadium-list.js";
-import { mapByTeamName, ensureStoreLoaded } from "./store.js"; // add mapByTeamName
-
-let currentFilter = "ALL";
+import { ensureStoreLoaded, getTeamsFiltered, NFC_NORTH_FILTER } from "./store.js";
 
 function wireControls() {
   const search = document.getElementById("searchInput");
-  const btnAll = document.getElementById("filterAll");
-  const btnA = document.getElementById("filterAFC");
-  const btnN = document.getElementById("filterNFC");
-
-  btnAll.addEventListener("click", () => { currentFilter = "ALL"; renderTeamList(currentFilter); });
-  btnA.addEventListener("click", () => { currentFilter = "AFC"; renderTeamList(currentFilter); });
-  btnN.addEventListener("click", () => { currentFilter = "NFC"; renderTeamList(currentFilter); });
 
   // case insensitive partial search on Enter
   search.addEventListener("keydown", e => {
@@ -21,11 +12,9 @@ function wireControls() {
       const q = search.value.trim().toLowerCase();
       if (!q) return;
 
-      // get all team names from our CustomMap
-      const keys = mapByTeamName.sortedKeys ? mapByTeamName.sortedKeys() : [];
-
-      // find first partial match
-      const found = keys.find(name => name.toLowerCase().includes(q));
+      const allowedTeams = getTeamsFiltered(NFC_NORTH_FILTER);
+      const allowedNames = allowedTeams.map(team => team.name);
+      const found = allowedNames.find(name => name.toLowerCase().includes(q));
 
       const detailEl = document.querySelector("#team-detail .content");
       if (found) {
@@ -82,7 +71,7 @@ async function init() {
   }
 
   wireControls();
-  renderTeamList(currentFilter);
+  renderTeamList();
   renderStadiumList();
   // renderTeamDetail("Green Bay Packers"); // optional default
 }

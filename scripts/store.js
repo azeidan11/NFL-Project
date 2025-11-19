@@ -5,6 +5,7 @@ import { loadData } from "./data.js";
 export const mapByTeamName = new CustomMap();
 // Map stadiumId -> Stadium (use native Map, different from assignment's C++ rule)
 export const stadiumById = new Map();
+export const NFC_NORTH_FILTER = { conference: "NFC", division: "North" };
 
 let loadPromise;
 
@@ -33,6 +34,13 @@ export function getTeamsSorted(conference = "ALL") {
     out.push(t);
   }
   return out;
+}
+
+export function getTeamsFiltered(options = {}) {
+  const { conference = "ALL", division } = options;
+  const teams = getTeamsSorted(conference);
+  if (!division) return teams;
+  return teams.filter(team => team.division === division);
 }
 
 export function getTeamByName(name) {
