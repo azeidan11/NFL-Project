@@ -12,7 +12,7 @@ function formatTeams(teams) {
 }
 
 export function renderStadiumList(options = {}) {
-  const { query = "", roofType = null } = options ?? {};
+  const { query = "", roofType = null, sortKey = "name" } = options ?? {};
   const tbody = document.querySelector("#stadium-table tbody");
   const countDisplay = document.getElementById("stadiumCount");
   if (!tbody) return;
@@ -41,7 +41,17 @@ export function renderStadiumList(options = {}) {
     return;
   }
 
-  const rows = filtered.map(({ stadium, teams }) => `
+  const sorted = filtered.slice().sort((a, b) => {
+    if (sortKey === "opened") {
+      const aYear = typeof a.stadium.opened === "number" ? a.stadium.opened : Infinity;
+      const bYear = typeof b.stadium.opened === "number" ? b.stadium.opened : Infinity;
+      if (aYear === bYear) return a.stadium.name.localeCompare(b.stadium.name);
+      return aYear - bYear;
+    }
+    return a.stadium.name.localeCompare(b.stadium.name);
+  });
+
+  const rows = sorted.map(({ stadium, teams }) => `
     <tr>
       <td>${stadium.name}</td>
       <td>${formatTeams(teams)}</td>

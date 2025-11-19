@@ -13,11 +13,17 @@ const STADIUM_FILTERS = {
   all: null,
   open: "open"
 };
+const STADIUM_SORTS = {
+  name: "name",
+  opened: "opened"
+};
 
 let currentTeamFilterKey = "all";
 let currentTeamFilter = TEAM_FILTERS[currentTeamFilterKey];
 let currentStadiumFilterKey = "all";
 let currentStadiumFilter = STADIUM_FILTERS[currentStadiumFilterKey];
+let currentStadiumSortKey = "name";
+let currentStadiumSort = STADIUM_SORTS[currentStadiumSortKey];
 
 function wireControls() {
   const search = document.getElementById("searchInput");
@@ -83,6 +89,8 @@ function wireControls() {
   const stadiumSearch = document.getElementById("stadiumSearchInput");
   const btnStadiumAll = document.getElementById("stadiumFilterAll");
   const btnStadiumOpen = document.getElementById("stadiumFilterOpen");
+  const btnStadiumSortName = document.getElementById("stadiumSortName");
+  const btnStadiumSortOpened = document.getElementById("stadiumSortOpened");
 
   const switchTab = target => {
     tabButtons.forEach(btn => {
@@ -105,7 +113,7 @@ function wireControls() {
   switchTab("teams");
 
   stadiumSearch?.addEventListener("input", () => {
-    renderStadiumList({ query: stadiumSearch.value, roofType: currentStadiumFilter });
+    renderStadiumList({ query: stadiumSearch.value, roofType: currentStadiumFilter, sortKey: currentStadiumSort });
   });
 
   const stadiumFilterButtons = {
@@ -125,12 +133,36 @@ function wireControls() {
     currentStadiumFilter = STADIUM_FILTERS[key] ?? null;
     updateStadiumFilterButtons(key);
     const query = stadiumSearch?.value ?? "";
-    renderStadiumList({ query, roofType: currentStadiumFilter });
+    renderStadiumList({ query, roofType: currentStadiumFilter, sortKey: currentStadiumSort });
   };
 
   btnStadiumAll?.addEventListener("click", () => applyStadiumFilter("all"));
   btnStadiumOpen?.addEventListener("click", () => applyStadiumFilter("open"));
   updateStadiumFilterButtons(currentStadiumFilterKey);
+
+  const stadiumSortButtons = {
+    name: btnStadiumSortName,
+    opened: btnStadiumSortOpened
+  };
+
+  const updateStadiumSortButtons = key => {
+    Object.entries(stadiumSortButtons).forEach(([name, btn]) => {
+      if (!btn) return;
+      btn.classList.toggle("active", name === key);
+    });
+  };
+
+  const applyStadiumSort = key => {
+    currentStadiumSortKey = key;
+    currentStadiumSort = STADIUM_SORTS[key] ?? "name";
+    updateStadiumSortButtons(key);
+    const query = stadiumSearch?.value ?? "";
+    renderStadiumList({ query, roofType: currentStadiumFilter, sortKey: currentStadiumSort });
+  };
+
+  btnStadiumSortName?.addEventListener("click", () => applyStadiumSort("name"));
+  btnStadiumSortOpened?.addEventListener("click", () => applyStadiumSort("opened"));
+  updateStadiumSortButtons(currentStadiumSortKey);
 }
 
 async function init() {
@@ -147,7 +179,7 @@ async function init() {
 
   wireControls();
   renderTeamList(currentTeamFilter);
-  renderStadiumList({ roofType: currentStadiumFilter });
+  renderStadiumList({ roofType: currentStadiumFilter, sortKey: currentStadiumSort });
   // renderTeamDetail("Green Bay Packers"); // optional default
 }
 
