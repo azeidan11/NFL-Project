@@ -4,7 +4,8 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial
 header { padding: 16px; border-bottom: 1px solid #eee; display: grid; gap: var(--gap); }
 .controls { display: flex; gap: var(--gap); flex-wrap: wrap; }
 input, button { padding: 8px 10px; font-size: 14px; }
-.controls button.active { background: #1f75fe; color: white; border-radius: 999px; }
+.controls button.active,
+.stadium-filter-buttons button.active { background: #1f75fe; color: white; border-radius: 999px; }
 main { display: flex; flex-direction: column; gap: var(--gap); padding: var(--gap); }
 .tab-nav { display: inline-flex; gap: 6px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
 .tab-nav button {
@@ -23,6 +24,9 @@ main { display: flex; flex-direction: column; gap: var(--gap); padding: var(--ga
 .tab-panel[data-tab="stadiums"].active { grid-template-columns: 1fr; }
 .panel { background: var(--card); padding: 12px; border-radius: 8px; }
 .panel-header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); flex-wrap: wrap; }
+.panel-header-title { display: flex; flex-direction: column; }
+.stadium-controls { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.stadium-filter-buttons { display: flex; gap: 6px; }
 .muted { color: #666; }
 table { width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; }
 thead { background: #fafafa; }

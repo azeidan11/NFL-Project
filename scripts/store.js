@@ -52,7 +52,10 @@ export function getStadiumById(id) {
   return stadiumById.get(id);
 }
 
-export function getStadiumTeamPairs() {
+export function getStadiumTeamPairs(options = {}) {
+  const opts = options ?? {};
+  const { roofType } = opts;
+
   const sortedTeams = mapByTeamName
     .sortedKeys()
     .map(name => mapByTeamName.find(name))
@@ -68,10 +71,22 @@ export function getStadiumTeamPairs() {
     }
   });
 
-  return Array.from(stadiumById.values())
+  let stadiums = Array.from(stadiumById.values());
+  if (roofType) {
+    const normalizedRoof = roofType.toLowerCase();
+    stadiums = stadiums.filter(stadium => (stadium.roof ?? "").toLowerCase() === normalizedRoof);
+  }
+
+  return stadiums
     .sort((a, b) => a.name.localeCompare(b.name))
     .map(stadium => ({
       stadium,
       teams: teamsByStadium.get(stadium.id) ?? []
     }));
+}
+
+export function countStadiumsByRoof(roofType) {
+  if (!roofType) return stadiumById.size;
+  const normalizedRoof = roofType.toLowerCase();
+  return Array.from(stadiumById.values()).filter(stadium => (stadium.roof ?? "").toLowerCase() === normalizedRoof).length;
 }

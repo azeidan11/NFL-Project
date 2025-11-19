@@ -9,9 +9,15 @@ const TEAM_FILTERS = {
   nfc: { conference: "NFC" },
   nfcNorth: NFC_NORTH_FILTER
 };
+const STADIUM_FILTERS = {
+  all: null,
+  open: "open"
+};
 
 let currentTeamFilterKey = "all";
 let currentTeamFilter = TEAM_FILTERS[currentTeamFilterKey];
+let currentStadiumFilterKey = "all";
+let currentStadiumFilter = STADIUM_FILTERS[currentStadiumFilterKey];
 
 function wireControls() {
   const search = document.getElementById("searchInput");
@@ -75,6 +81,8 @@ function wireControls() {
   const tabButtons = document.querySelectorAll("[data-tab-target]");
   const tabPanels = document.querySelectorAll(".tab-panel");
   const stadiumSearch = document.getElementById("stadiumSearchInput");
+  const btnStadiumAll = document.getElementById("stadiumFilterAll");
+  const btnStadiumOpen = document.getElementById("stadiumFilterOpen");
 
   const switchTab = target => {
     tabButtons.forEach(btn => {
@@ -97,8 +105,32 @@ function wireControls() {
   switchTab("teams");
 
   stadiumSearch?.addEventListener("input", () => {
-    renderStadiumList(stadiumSearch.value);
+    renderStadiumList({ query: stadiumSearch.value, roofType: currentStadiumFilter });
   });
+
+  const stadiumFilterButtons = {
+    all: btnStadiumAll,
+    open: btnStadiumOpen
+  };
+
+  const updateStadiumFilterButtons = key => {
+    Object.entries(stadiumFilterButtons).forEach(([name, btn]) => {
+      if (!btn) return;
+      btn.classList.toggle("active", name === key);
+    });
+  };
+
+  const applyStadiumFilter = key => {
+    currentStadiumFilterKey = key;
+    currentStadiumFilter = STADIUM_FILTERS[key] ?? null;
+    updateStadiumFilterButtons(key);
+    const query = stadiumSearch?.value ?? "";
+    renderStadiumList({ query, roofType: currentStadiumFilter });
+  };
+
+  btnStadiumAll?.addEventListener("click", () => applyStadiumFilter("all"));
+  btnStadiumOpen?.addEventListener("click", () => applyStadiumFilter("open"));
+  updateStadiumFilterButtons(currentStadiumFilterKey);
 }
 
 async function init() {
@@ -115,7 +147,7 @@ async function init() {
 
   wireControls();
   renderTeamList(currentTeamFilter);
-  renderStadiumList();
+  renderStadiumList({ roofType: currentStadiumFilter });
   // renderTeamDetail("Green Bay Packers"); // optional default
 }
 

@@ -44,8 +44,17 @@
     <div class="tab-panel" data-tab="stadiums" hidden>
       <section class="panel" id="stadium-panel">
         <div class="panel-header">
-          <h2>Stadiums</h2>
-          <input id="stadiumSearchInput" placeholder="Search stadium by name" />
+          <div class="panel-header-title">
+            <h2>Stadiums</h2>
+            <p class="muted" id="stadiumCount">Calculating open-roof stadiums...</p>
+          </div>
+          <div class="stadium-controls">
+            <input id="stadiumSearchInput" placeholder="Search stadium by name" />
+            <div class="stadium-filter-buttons">
+              <button id="stadiumFilterAll" class="active">All Stadiums</button>
+              <button id="stadiumFilterOpen">Open Roof</button>
+            </div>
+          </div>
         </div>
         <table id="stadium-table">
           <thead>

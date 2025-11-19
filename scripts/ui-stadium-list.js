@@ -1,4 +1,4 @@
-import { getStadiumTeamPairs } from "./store.js";
+import { getStadiumTeamPairs, countStadiumsByRoof } from "./store.js";
 
 function formatLocation(stadium) {
   const city = stadium?.location?.city ?? "";
@@ -11,23 +11,33 @@ function formatTeams(teams) {
   return teams.map(team => team.name).join(", ");
 }
 
-export function renderStadiumList(query = "") {
+export function renderStadiumList(options = {}) {
+  const { query = "", roofType = null } = options ?? {};
   const tbody = document.querySelector("#stadium-table tbody");
+  const countDisplay = document.getElementById("stadiumCount");
   if (!tbody) return;
 
-  const entries = getStadiumTeamPairs();
-  if (!entries.length) {
-    tbody.innerHTML = `<tr><td colspan="3" class="muted">No stadium data available.</td></tr>`;
+  const baseEntries = getStadiumTeamPairs(roofType ? { roofType } : undefined);
+  const openRoofCount = countStadiumsByRoof("open");
+  if (countDisplay) {
+    const plural = openRoofCount === 1 ? "" : "s";
+    countDisplay.textContent = `${openRoofCount} open-roof stadium${plural}`;
+  }
+
+  if (!baseEntries.length) {
+    const label = roofType === "open" ? "open-roof stadium data" : "stadium data";
+    tbody.innerHTML = `<tr><td colspan="3" class="muted">No ${label} available.</td></tr>`;
     return;
   }
 
   const normalized = query.trim().toLowerCase();
   const filtered = normalized
-    ? entries.filter(({ stadium }) => stadium.name.toLowerCase().includes(normalized))
-    : entries;
+    ? baseEntries.filter(({ stadium }) => stadium.name.toLowerCase().includes(normalized))
+    : baseEntries;
 
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="3" class="muted">No stadiums match "${query}".</td></tr>`;
+    const label = roofType === "open" ? "open-roof stadiums" : "stadiums";
+    tbody.innerHTML = `<tr><td colspan="3" class="muted">No ${label} match "${query}".</td></tr>`;
     return;
   }
 
