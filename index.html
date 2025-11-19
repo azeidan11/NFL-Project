@@ -15,6 +15,10 @@
       <button id="filterAFC">AFC</button>
       <button id="filterNFC">NFC</button>
       <button id="filterNfcNorth">NFC North</button>
+      <div class="team-sort-buttons">
+        <button id="teamSortName" class="active">Sort A-Z</button>
+        <button id="teamSortConference">Sort by Conference</button>
+      </div>
     </div>
   </header>
 
@@ -29,7 +33,13 @@
         <h2>Teams</h2>
         <table id="team-table" data-clickable="true">
           <thead>
-            <tr><th>Team</th><th>Conference</th><th>Division</th></tr>
+            <tr>
+              <th>Team</th>
+              <th>Stadium</th>
+              <th>Conference</th>
+              <th>Division</th>
+              <th>Location</th>
+            </tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -57,17 +67,19 @@
             <div class="stadium-sort-buttons">
               <button id="stadiumSortName" class="active">Sort A-Z</button>
               <button id="stadiumSortOpened">Sort Oldest</button>
+              <button id="stadiumSortCapacity">Sort by Capacity</button>
             </div>
           </div>
         </div>
         <table id="stadium-table">
           <thead>
-            <tr><th>Stadium</th><th>Team(s)</th><th>Location</th></tr>
+            <tr><th>Stadium</th><th>Capacity</th><th>Team(s)</th><th>Location</th></tr>
           </thead>
           <tbody>
-            <tr><td colspan="3" class="muted">Loading stadiums...</td></tr>
+            <tr><td colspan="4" class="muted">Loading stadiums...</td></tr>
           </tbody>
         </table>
+        <p class="muted" id="totalCapacity" aria-live="polite"></p>
       </section>
     </div>
   </main>

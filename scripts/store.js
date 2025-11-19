@@ -90,3 +90,13 @@ export function countStadiumsByRoof(roofType) {
   const normalizedRoof = roofType.toLowerCase();
   return Array.from(stadiumById.values()).filter(stadium => (stadium.roof ?? "").toLowerCase() === normalizedRoof).length;
 }
+
+export function getTotalStadiumCapacity() {
+  let total = 0;
+  stadiumById.forEach(stadium => {
+    if (typeof stadium.capacity === "number" && Number.isFinite(stadium.capacity)) {
+      total += stadium.capacity;
+    }
+  });
+  return total;
+}

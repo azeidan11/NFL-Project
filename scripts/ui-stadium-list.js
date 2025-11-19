@@ -1,4 +1,4 @@
-import { getStadiumTeamPairs, countStadiumsByRoof } from "./store.js";
+import { getStadiumTeamPairs, countStadiumsByRoof, getTotalStadiumCapacity } from "./store.js";
 
 function formatLocation(stadium) {
   const city = stadium?.location?.city ?? "";
@@ -11,10 +11,16 @@ function formatTeams(teams) {
   return teams.map(team => team.name).join(", ");
 }
 
+function formatCapacity(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "N/A";
+  return value.toLocaleString();
+}
+
 export function renderStadiumList(options = {}) {
   const { query = "", roofType = null, sortKey = "name" } = options ?? {};
   const tbody = document.querySelector("#stadium-table tbody");
   const countDisplay = document.getElementById("stadiumCount");
+  const totalCapacityDisplay = document.getElementById("totalCapacity");
   if (!tbody) return;
 
   const baseEntries = getStadiumTeamPairs(roofType ? { roofType } : undefined);
@@ -24,9 +30,15 @@ export function renderStadiumList(options = {}) {
     countDisplay.textContent = `${openRoofCount} open-roof stadium${plural}`;
   }
 
+  const aggregateCapacity = getTotalStadiumCapacity();
+  if (totalCapacityDisplay) {
+    const formatted = typeof aggregateCapacity === "number" ? aggregateCapacity.toLocaleString() : "N/A";
+    totalCapacityDisplay.textContent = `Total NFL seating capacity: ${formatted}`;
+  }
+
   if (!baseEntries.length) {
     const label = roofType === "open" ? "open-roof stadium data" : "stadium data";
-    tbody.innerHTML = `<tr><td colspan="3" class="muted">No ${label} available.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="muted">No ${label} available.</td></tr>`;
     return;
   }
 
@@ -37,7 +49,7 @@ export function renderStadiumList(options = {}) {
 
   if (!filtered.length) {
     const label = roofType === "open" ? "open-roof stadiums" : "stadiums";
-    tbody.innerHTML = `<tr><td colspan="3" class="muted">No ${label} match "${query}".</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="muted">No ${label} match "${query}".</td></tr>`;
     return;
   }
 
@@ -48,12 +60,19 @@ export function renderStadiumList(options = {}) {
       if (aYear === bYear) return a.stadium.name.localeCompare(b.stadium.name);
       return aYear - bYear;
     }
+    if (sortKey === "capacity") {
+      const aCap = typeof a.stadium.capacity === "number" ? a.stadium.capacity : Infinity;
+      const bCap = typeof b.stadium.capacity === "number" ? b.stadium.capacity : Infinity;
+      if (aCap === bCap) return a.stadium.name.localeCompare(b.stadium.name);
+      return aCap - bCap;
+    }
     return a.stadium.name.localeCompare(b.stadium.name);
   });
 
   const rows = sorted.map(({ stadium, teams }) => `
     <tr>
       <td>${stadium.name}</td>
+      <td>${formatCapacity(stadium.capacity)}</td>
       <td>${formatTeams(teams)}</td>
       <td>${formatLocation(stadium)}</td>
     </tr>

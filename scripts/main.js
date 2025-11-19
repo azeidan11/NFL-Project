@@ -9,17 +9,24 @@ const TEAM_FILTERS = {
   nfc: { conference: "NFC" },
   nfcNorth: NFC_NORTH_FILTER
 };
+const TEAM_SORTS = {
+  name: "name",
+  conference: "conference"
+};
 const STADIUM_FILTERS = {
   all: null,
   open: "open"
 };
 const STADIUM_SORTS = {
   name: "name",
-  opened: "opened"
+  opened: "opened",
+  capacity: "capacity"
 };
 
 let currentTeamFilterKey = "all";
 let currentTeamFilter = TEAM_FILTERS[currentTeamFilterKey];
+let currentTeamSortKey = "name";
+let currentTeamSort = TEAM_SORTS[currentTeamSortKey];
 let currentStadiumFilterKey = "all";
 let currentStadiumFilter = STADIUM_FILTERS[currentStadiumFilterKey];
 let currentStadiumSortKey = "name";
@@ -31,6 +38,8 @@ function wireControls() {
   const btnAfc = document.getElementById("filterAFC");
   const btnNfc = document.getElementById("filterNFC");
   const btnNfcNorth = document.getElementById("filterNfcNorth");
+  const btnTeamSortName = document.getElementById("teamSortName");
+  const btnTeamSortConference = document.getElementById("teamSortConference");
 
   // case insensitive partial search on Enter
   search.addEventListener("keydown", e => {
@@ -75,7 +84,7 @@ function wireControls() {
     currentTeamFilterKey = key;
     currentTeamFilter = TEAM_FILTERS[key] ?? null;
     updateFilterButtons(key);
-    renderTeamList(currentTeamFilter);
+    renderTeamList({ filter: currentTeamFilter, sortKey: currentTeamSort });
   };
 
   btnAllTeams?.addEventListener("click", () => applyFilter("all"));
@@ -84,6 +93,29 @@ function wireControls() {
   btnNfcNorth?.addEventListener("click", () => applyFilter("nfcNorth"));
   updateFilterButtons(currentTeamFilterKey);
 
+  const teamSortButtons = {
+    name: btnTeamSortName,
+    conference: btnTeamSortConference
+  };
+
+  const updateTeamSortButtons = key => {
+    Object.entries(teamSortButtons).forEach(([name, btn]) => {
+      if (!btn) return;
+      btn.classList.toggle("active", name === key);
+    });
+  };
+
+  const applyTeamSort = key => {
+    currentTeamSortKey = key;
+    currentTeamSort = TEAM_SORTS[key] ?? "name";
+    updateTeamSortButtons(key);
+    renderTeamList({ filter: currentTeamFilter, sortKey: currentTeamSort });
+  };
+
+  btnTeamSortName?.addEventListener("click", () => applyTeamSort("name"));
+  btnTeamSortConference?.addEventListener("click", () => applyTeamSort("conference"));
+  updateTeamSortButtons(currentTeamSortKey);
+
   const tabButtons = document.querySelectorAll("[data-tab-target]");
   const tabPanels = document.querySelectorAll(".tab-panel");
   const stadiumSearch = document.getElementById("stadiumSearchInput");
@@ -91,6 +123,7 @@ function wireControls() {
   const btnStadiumOpen = document.getElementById("stadiumFilterOpen");
   const btnStadiumSortName = document.getElementById("stadiumSortName");
   const btnStadiumSortOpened = document.getElementById("stadiumSortOpened");
+  const btnStadiumSortCapacity = document.getElementById("stadiumSortCapacity");
 
   const switchTab = target => {
     tabButtons.forEach(btn => {
@@ -142,7 +175,8 @@ function wireControls() {
 
   const stadiumSortButtons = {
     name: btnStadiumSortName,
-    opened: btnStadiumSortOpened
+    opened: btnStadiumSortOpened,
+    capacity: btnStadiumSortCapacity
   };
 
   const updateStadiumSortButtons = key => {
@@ -162,6 +196,7 @@ function wireControls() {
 
   btnStadiumSortName?.addEventListener("click", () => applyStadiumSort("name"));
   btnStadiumSortOpened?.addEventListener("click", () => applyStadiumSort("opened"));
+  btnStadiumSortCapacity?.addEventListener("click", () => applyStadiumSort("capacity"));
   updateStadiumSortButtons(currentStadiumSortKey);
 }
 
@@ -178,7 +213,7 @@ async function init() {
   }
 
   wireControls();
-  renderTeamList(currentTeamFilter);
+  renderTeamList({ filter: currentTeamFilter, sortKey: currentTeamSort });
   renderStadiumList({ roofType: currentStadiumFilter, sortKey: currentStadiumSort });
   // renderTeamDetail("Green Bay Packers"); // optional default
 }
