@@ -2,6 +2,7 @@ import { renderTeamList } from "./ui-team-list.js";
 import { renderTeamDetail } from "./ui-team-detail.js";
 import { renderStadiumList } from "./ui-stadium-list.js";
 import { ensureStoreLoaded, getTeamsFiltered, NFC_NORTH_FILTER } from "./store.js";
+import { initTripUI } from "./ui-trips.js";
 
 const TEAM_FILTERS = {
   all: null,
@@ -138,11 +139,18 @@ function wireControls() {
     if (target === "stadiums" && stadiumSearch) {
       stadiumSearch.focus();
     }
+    if (target === "trips") {
+      initTripUI();
+    }
   };
 
   tabButtons.forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tabTarget));
   });
+  const btnTrips = document.querySelector('[data-tab-target="trips"]');
+  if (btnTrips) {
+    btnTrips.addEventListener("click", () => switchTab("trips"));
+  }
   switchTab("teams");
 
   stadiumSearch?.addEventListener("input", () => {
@@ -215,6 +223,7 @@ async function init() {
   wireControls();
   renderTeamList({ filter: currentTeamFilter, sortKey: currentTeamSort });
   renderStadiumList({ roofType: currentStadiumFilter, sortKey: currentStadiumSort });
+  initTripUI();
   // renderTeamDetail("Green Bay Packers"); // optional default
 }
 

@@ -26,6 +26,7 @@
     <div class="tab-nav">
       <button data-tab-target="teams" class="active">Teams</button>
       <button data-tab-target="stadiums">Stadiums</button>
+      <button data-tab-target="trips">Trips</button>
     </div>
 
     <div class="tab-panel active" data-tab="teams">
@@ -80,6 +81,38 @@
           </tbody>
         </table>
         <p class="muted" id="totalCapacity" aria-live="polite"></p>
+      </section>
+    </div>
+    <div class="tab-panel" data-tab="trips" hidden>
+      <section class="panel" id="trips-panel">
+        <h2>Trip Planner</h2>
+        <div class="trip-controls" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+          <button id="btnDijkstra">Shortest Path from Green Bay</button>
+          <button id="btnCustomOrder">Custom Ordered Trip</button>
+          <button id="btnPatriotsGreedy">Patriots Greedy Trip</button>
+          <button id="btnCustomGreedy">Custom Greedy Trip</button>
+          <button id="btnMST">Minimum Spanning Tree</button>
+          <button id="btnDFS">DFS from Vikings</button>
+        </div>
+        <div class="trip-inputs" style="display:grid;gap:12px;margin-bottom:16px;">
+          <div>
+            <label><strong>Select destination for Dijkstra (from Green Bay):</strong></label><br>
+            <select id="orderedTripSelect"></select>
+          </div>
+          <div>
+            <label><strong>Enter ordered trip teams (comma separated):</strong></label><br>
+            <input id="orderedTripSequence" placeholder="Example: Bears, Lions, Vikings" style="width:100%;padding:6px;" />
+          </div>
+          <div>
+            <label><strong>Select custom greedy start team:</strong></label><br>
+            <select id="customStartSelect"></select>
+          </div>
+          <div>
+            <label><strong>Enter custom greedy teams (comma separated):</strong></label><br>
+            <input id="customTeamList" placeholder="Example: Chiefs, Raiders, Broncos" style="width:100%;padding:6px;" />
+          </div>
+        </div>
+        <div id="tripResults"><div class="content muted">Select a trip option to begin.</div></div>
       </section>
     </div>
   </main>
