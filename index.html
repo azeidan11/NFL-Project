@@ -2,124 +2,185 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>NFL Trip Planner — Sprint 1</title>
+  <title>NFL Trip Planner - Sprint 1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <header>
-    <h1>NFL Teams</h1>
-    <div class="controls">
-      <input id="searchInput" placeholder="Search team by name" />
-      <button id="filterAllTeams" class="active">All Teams</button>
-      <button id="filterAFC">AFC</button>
-      <button id="filterNFC">NFC</button>
-      <button id="filterNfcNorth">NFC North</button>
-      <div class="team-sort-buttons">
-        <button id="teamSortName" class="active">Sort A-Z</button>
-        <button id="teamSortConference">Sort by Conference</button>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__info">
+        <p class="eyebrow">NFL Trip Planner</p>
+        <h1>Plan smarter NFL journeys</h1>
+        <p class="muted">Explore teams, stadiums, and optimized travel routes with quick filters and interactive tools.</p>
+        <div class="chips">
+          <span class="chip">Teams</span>
+          <span class="chip">Stadiums</span>
+          <span class="chip">Trips</span>
+        </div>
       </div>
-    </div>
-  </header>
-
-  <main>
-    <div class="tab-nav">
-      <button data-tab-target="teams" class="active">Teams</button>
-      <button data-tab-target="stadiums">Stadiums</button>
-      <button data-tab-target="trips">Trips</button>
-    </div>
-
-    <div class="tab-panel active" data-tab="teams">
-      <section class="panel">
-        <h2>Teams</h2>
-        <table id="team-table" data-clickable="true">
-          <thead>
-            <tr>
-              <th>Team</th>
-              <th>Stadium</th>
-              <th>Conference</th>
-              <th>Division</th>
-              <th>Location</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-
-      <section class="panel" id="team-detail">
-        <h2>Team Detail</h2>
-        <div class="content muted">Select a team to view details.</div>
-      </section>
-    </div>
-
-    <div class="tab-panel" data-tab="stadiums" hidden>
-      <section class="panel" id="stadium-panel">
-        <div class="panel-header">
-          <div class="panel-header-title">
-            <h2>Stadiums</h2>
-            <p class="muted" id="stadiumCount">Calculating open-roof stadiums...</p>
+      <div class="hero__controls">
+        <div class="controls">
+          <div class="control-group">
+            <label class="control-label" for="searchInput">Quick search</label>
+            <input id="searchInput" placeholder="Search team by name" />
           </div>
-          <div class="stadium-controls">
-            <input id="stadiumSearchInput" placeholder="Search stadium by name" />
-            <div class="stadium-filter-buttons">
-              <button id="stadiumFilterAll" class="active">All Stadiums</button>
-              <button id="stadiumFilterOpen">Open Roof</button>
+          <div class="control-group">
+            <label class="control-label">Filter by conference</label>
+            <div class="button-group">
+              <button id="filterAllTeams" class="active">All Teams</button>
+              <button id="filterAFC">AFC</button>
+              <button id="filterNFC">NFC</button>
+              <button id="filterNfcNorth">NFC North</button>
             </div>
-            <div class="stadium-sort-buttons">
-              <button id="stadiumSortName" class="active">Sort A-Z</button>
-              <button id="stadiumSortOpened">Sort Oldest</button>
-              <button id="stadiumSortCapacity">Sort by Capacity</button>
+          </div>
+          <div class="control-group">
+            <label class="control-label">Sort teams</label>
+            <div class="button-group team-sort-buttons">
+              <button id="teamSortName" class="active">Sort A-Z</button>
+              <button id="teamSortConference">Sort by Conference</button>
             </div>
           </div>
         </div>
-        <table id="stadium-table">
-          <thead>
-            <tr><th>Stadium</th><th>Capacity</th><th>Team(s)</th><th>Location</th></tr>
-          </thead>
-          <tbody>
-            <tr><td colspan="4" class="muted">Loading stadiums...</td></tr>
-          </tbody>
-        </table>
-        <p class="muted" id="totalCapacity" aria-live="polite"></p>
-      </section>
-    </div>
-    <div class="tab-panel" data-tab="trips" hidden>
-      <section class="panel" id="trips-panel">
-        <h2>Trip Planner</h2>
-        <div class="trip-controls" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-          <button id="btnDijkstra">Shortest Path from Green Bay</button>
-          <button id="btnCustomOrder">Custom Ordered Trip</button>
-          <button id="btnPatriotsGreedy">Patriots Greedy Trip</button>
-          <button id="btnCustomGreedy">Custom Greedy Trip</button>
-          <button id="btnMST">Minimum Spanning Tree</button>
-          <button id="btnDFS">DFS from Vikings</button>
-        </div>
-        <div class="trip-inputs" style="display:grid;gap:12px;margin-bottom:16px;">
-          <div>
-            <label><strong>Select destination for Dijkstra (from Green Bay):</strong></label><br>
-            <select id="orderedTripSelect"></select>
-          </div>
-          <div>
-            <label><strong>Enter ordered trip teams (comma separated):</strong></label><br>
-            <input id="orderedTripSequence" placeholder="Example: Bears, Lions, Vikings" style="width:100%;padding:6px;" />
-          </div>
-          <div>
-            <label><strong>Select custom greedy start team:</strong></label><br>
-            <select id="customStartSelect"></select>
-          </div>
-          <div>
-            <label><strong>Enter custom greedy teams (comma separated):</strong></label><br>
-            <input id="customTeamList" placeholder="Example: Chiefs, Raiders, Broncos" style="width:100%;padding:6px;" />
-          </div>
-        </div>
-        <div id="tripResults"><div class="content muted">Select a trip option to begin.</div></div>
-      </section>
-    </div>
-  </main>
+      </div>
+    </header>
 
-  <footer>
-    <small>Sprint 1: custom map, team list, detail view</small>
-  </footer>
+    <main>
+      <div class="tab-nav">
+        <button data-tab-target="teams" class="active">Teams</button>
+        <button data-tab-target="stadiums">Stadiums</button>
+        <button data-tab-target="trips">Trips</button>
+      </div>
+
+      <div class="tab-panel active" data-tab="teams">
+        <section class="panel">
+          <h2>Teams</h2>
+          <p class="muted">Click a row to view details and souvenirs.</p>
+          <table id="team-table" data-clickable="true">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Stadium</th>
+                <th>Conference</th>
+                <th>Division</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+
+        <section class="panel" id="team-detail">
+          <h2>Team Detail</h2>
+          <div class="content muted">Select a team to view details.</div>
+        </section>
+      </div>
+
+      <div class="tab-panel" data-tab="stadiums" hidden>
+        <section class="panel" id="stadium-panel">
+          <div class="panel-header">
+            <div class="panel-header-title">
+              <h2>Stadiums</h2>
+              <p class="muted" id="stadiumCount">Calculating open-roof stadiums...</p>
+            </div>
+            <div class="stadium-controls">
+              <input id="stadiumSearchInput" placeholder="Search stadium by name" />
+              <div class="stadium-filter-buttons">
+                <button id="stadiumFilterAll" class="active">All Stadiums</button>
+                <button id="stadiumFilterOpen">Open Roof</button>
+              </div>
+              <div class="stadium-sort-buttons">
+                <button id="stadiumSortName" class="active">Sort A-Z</button>
+                <button id="stadiumSortOpened">Sort Oldest</button>
+                <button id="stadiumSortCapacity">Sort by Capacity</button>
+              </div>
+            </div>
+          </div>
+          <table id="stadium-table">
+            <thead>
+              <tr><th>Stadium</th><th>Capacity</th><th>Team(s)</th><th>Location</th></tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="4" class="muted">Loading stadiums...</td></tr>
+            </tbody>
+          </table>
+          <p class="muted" id="totalCapacity" aria-live="polite"></p>
+        </section>
+      </div>
+      <div class="tab-panel" data-tab="trips" hidden>
+        <section class="panel" id="trips-panel">
+          <div class="panel-header">
+            <div class="panel-header-title">
+              <h2>Trip Planner</h2>
+              <p class="muted">Pick a strategy or craft your own route.</p>
+            </div>
+            <div class="pill-note">Tip: Enter teams with commas (e.g., <span class="muted">Bears, Lions, Vikings</span>).</div>
+          </div>
+
+          <div class="trip-grid">
+            <div class="trip-card">
+              <div class="trip-card__header">
+                <div>
+                  <h3>Shortest path</h3>
+                  <p class="muted">From Green Bay Packers to a selected team.</p>
+                </div>
+                <button id="btnDijkstra">Run</button>
+              </div>
+              <label class="control-label" for="orderedTripSelect">Destination team</label>
+              <select id="orderedTripSelect"></select>
+            </div>
+
+            <div class="trip-card">
+              <div class="trip-card__header">
+                <div>
+                  <h3>Custom ordered trip</h3>
+                  <p class="muted">Follow teams exactly in the order you list.</p>
+                </div>
+                <button id="btnCustomOrder">Run</button>
+              </div>
+              <label class="control-label" for="orderedTripSequence">Team order</label>
+              <input id="orderedTripSequence" placeholder="Example: Bears, Lions, Vikings" />
+            </div>
+
+            <div class="trip-card">
+              <div class="trip-card__header">
+                <div>
+                  <h3>Custom greedy trip</h3>
+                  <p class="muted">Start from a team and greedily visit the closest remaining.</p>
+                </div>
+                <button id="btnCustomGreedy">Run</button>
+              </div>
+              <label class="control-label" for="customStartSelect">Start team</label>
+              <select id="customStartSelect"></select>
+              <label class="control-label" for="customTeamList">Teams to include</label>
+              <input id="customTeamList" placeholder="Example: Chiefs, Raiders, Broncos" />
+            </div>
+
+            <div class="trip-card trip-card--stack">
+              <div class="trip-card__header">
+                <div>
+                  <h3>One-click routes</h3>
+                  <p class="muted">Fast presets and graph insights.</p>
+                </div>
+              </div>
+              <div class="trip-controls">
+                <button id="btnPatriotsGreedy">Patriots Greedy Trip</button>
+                <button id="btnMST">Minimum Spanning Tree</button>
+                <button id="btnDFS">DFS from Vikings</button>
+                <button id="btnBFS">BFS from Rams</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="tripResults"><div class="content muted">Select a trip option to begin.</div></div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <small>Sprint 1: custom map, team list, detail view</small>
+    </footer>
+  </div>
 
   <script type="module" src="./scripts/main.js"></script>
 </body>
