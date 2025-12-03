@@ -1,0 +1,23 @@
+@startuml
+actor "Administrator" as Admin
+
+rectangle "Admin Maintenance" {
+  usecase "Admin Login" as UC_Login
+  usecase "Import New Team\nfrom File" as UC_ImportTeam
+  usecase "Modify Stadium Info\nand Capacity" as UC_EditStadium
+  usecase "Manage Souvenirs\n(add, edit, delete)" as UC_Souvenirs
+  usecase "View Bermuda Grass\nTeams Report" as UC_Bermuda
+  usecase "Save and Load\nPersistent Data" as UC_Persistence
+}
+
+Admin --> UC_Login
+UC_Login --> UC_ImportTeam : <<extends>>
+UC_Login --> UC_EditStadium : <<extends>>
+UC_Login --> UC_Souvenirs : <<extends>>
+UC_Login --> UC_Bermuda : <<extends>>
+
+UC_ImportTeam --> UC_Persistence : <<includes>>
+UC_EditStadium --> UC_Persistence : <<includes>>
+UC_Souvenirs --> UC_Persistence : <<includes>>
+
+@enduml

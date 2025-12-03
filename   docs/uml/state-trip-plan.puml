@@ -1,0 +1,15 @@
+@startuml
+[*] --> Empty
+
+Empty --> Draft : user enters start team\nand destination list
+Draft --> Validated : input passes validation
+Draft --> Error : invalid or missing teams
+
+Validated --> Running : user runs\nDijkstra / Greedy / DFS / BFS / MST
+Running --> Completed : algorithm finished
+Running --> Error : graph missing\nor unreachable stadium
+
+Completed --> Draft : user edits\ntrip parameters
+Error --> Draft : user fixes input\nor reloads data
+
+@enduml

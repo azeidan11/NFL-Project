@@ -1,0 +1,11 @@
+@startuml
+[*] --> Original
+
+Original --> EditedLocal : admin edits\nteam or stadium info
+EditedLocal --> SavedPersistent : admin saves changes
+SavedPersistent --> EditedLocal : admin edits again
+SavedPersistent --> Deleted : admin deletes team
+
+Deleted --> [*]
+
+@enduml

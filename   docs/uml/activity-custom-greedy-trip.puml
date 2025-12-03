@@ -1,0 +1,45 @@
+@startuml
+start
+
+:Fan opens Trip Planner tab;
+:Fan selects starting team;
+:Fan types list of other teams to visit;
+:Fan clicks "Custom Greedy Trip" button;
+
+:Validate input
+- check start team exists
+- check each team exists
+- remove duplicates and start from list;
+
+if (Input valid?) then (yes)
+  :Map each team to its stadium;
+  :Build set of stadium targets;
+
+  :Set current stadium = start stadium;
+  :Set totalDistance = 0;
+  :Mark start stadium visited;
+
+  repeat
+    :Find closest unvisited target stadium
+    using Dijkstra distance;
+    if (Found reachable target?) then (yes)
+      :Add leg (current -> closest);
+      :Add distance to totalDistance;
+      :Set current = closest;
+      :Mark closest visited;
+    else (no)
+      :Stop, some stadiums unreachable;
+      break
+    endif
+  repeat while (unvisited targets exist)
+
+  :Show trip summary
+  - stadium order
+  - leg distances
+  - totalDistance;
+else (no)
+  :Show validation error message;
+endif
+
+stop
+@enduml

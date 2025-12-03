@@ -1,0 +1,20 @@
+@startuml
+actor Fan
+
+rectangle "NFL Trip Planner" {
+  usecase "View Team List" as UC_ViewTeams
+  usecase "Filter Teams\n(AFC, NFC, NFC North)" as UC_FilterTeams
+  usecase "View Team Detail\n(team, stadium info)" as UC_ViewTeamDetail
+  usecase "View Souvenir List\nfor Team" as UC_ViewSouvenirs
+  usecase "View Stadium List" as UC_ViewStadiums
+}
+
+Fan --> UC_ViewTeams
+Fan --> UC_FilterTeams
+Fan --> UC_ViewTeamDetail
+Fan --> UC_ViewSouvenirs
+Fan --> UC_ViewStadiums
+
+UC_ViewTeamDetail --> UC_ViewSouvenirs : <<includes>>
+
+@enduml

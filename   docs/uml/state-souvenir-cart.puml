@@ -1,0 +1,12 @@
+@startuml
+[*] --> Empty
+
+Empty --> HasItems : add souvenir
+HasItems --> HasItems : change quantities\nadd or remove items
+HasItems --> Empty : remove all items
+HasItems --> CheckedOut : confirm purchase\nfor this stadium
+
+CheckedOut --> HasItems : user adds\nmore items later
+CheckedOut --> Empty : user clears\ncart or leaves stadium
+
+@enduml

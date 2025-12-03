@@ -1,0 +1,22 @@
+@startuml
+actor Fan
+
+rectangle "Trip Planner" {
+  usecase "Shortest Path\nfrom Packers\n(Dijkstra)" as UC_DijkstraPackers
+  usecase "Ordered Trip\n(user sequence)" as UC_OrderedTrip
+  usecase "Greedy Trip\nAll Teams from Patriots" as UC_PatriotsGreedy
+  usecase "Greedy Trip\nCustom Start + Subset" as UC_CustomGreedy
+  usecase "View MST\n(Prim or Kruskal)" as UC_MST
+  usecase "DFS from Vikings" as UC_DFSVikings
+  usecase "BFS from Rams" as UC_BFSRams
+}
+
+Fan --> UC_DijkstraPackers
+Fan --> UC_OrderedTrip
+Fan --> UC_PatriotsGreedy
+Fan --> UC_CustomGreedy
+Fan --> UC_MST
+Fan --> UC_DFSVikings
+Fan --> UC_BFSRams
+
+@enduml
