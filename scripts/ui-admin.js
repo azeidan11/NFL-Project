@@ -13,6 +13,7 @@ import {
 } from "./store.js";
 import { renderTeamList } from "./ui-team-list.js";
 import { renderStadiumList } from "./ui-stadium-list.js";
+import { loadCsv } from "./csv-utils.js";
 
 const ADMIN_PASSWORD = "admin";
 let unlocked = false;
@@ -73,26 +74,24 @@ function refreshTeamSouvenirNames() {
 }
 
 function handleAddTeamsFromFile() {
-  const input = document.getElementById("adminTeamFile");
-  if (!input?.files?.length) {
-    setAdminStatus("Choose a team CSV file first.", true);
-    return;
-  }
-  const file = input.files[0];
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const text = e.target.result;
-      const { addedTeams, addedStadiums } = addTeamsFromCsvText(text);
+  loadCsv("./NFL_Information.csv")
+    .then(dataset => {
+      const headers = dataset.headers;
+      const rows = dataset.rows;
+      if (!headers?.length || !rows?.length) {
+        setAdminStatus("No data found in NFL_Information.csv.", true);
+        return;
+      }
+      const csvText = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const { addedTeams, addedStadiums } = addTeamsFromCsvText(csvText);
       renderTeamList();
       renderStadiumList();
-      setAdminStatus(`Added ${addedTeams} team(s) and ${addedStadiums} stadium(s) from file.`);
-    } catch (err) {
+      setAdminStatus(`Added ${addedTeams} team(s) and ${addedStadiums} stadium(s) from NFL_Information.csv.`);
+    })
+    .catch(err => {
       console.error(err);
-      setAdminStatus("Failed to import teams. Check file format.", true);
-    }
-  };
-  reader.readAsText(file);
+      setAdminStatus("Failed to import NFL_Information.csv.", true);
+    });
 }
 
 function handleUpdateSouvenirPrice() {

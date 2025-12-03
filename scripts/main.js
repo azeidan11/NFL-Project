@@ -9,11 +9,13 @@ const TEAM_FILTERS = {
   all: null,
   afc: { conference: "AFC" },
   nfc: { conference: "NFC" },
-  nfcNorth: NFC_NORTH_FILTER
+  nfcNorth: NFC_NORTH_FILTER,
+  bermuda: { surface: "Bermuda grass" }
 };
 const TEAM_SORTS = {
   name: "name",
-  conference: "conference"
+  conference: "conference",
+  surface: "surface"
 };
 const STADIUM_FILTERS = {
   all: null,
@@ -40,8 +42,10 @@ function wireControls() {
   const btnAfc = document.getElementById("filterAFC");
   const btnNfc = document.getElementById("filterNFC");
   const btnNfcNorth = document.getElementById("filterNfcNorth");
+  const btnBermuda = document.getElementById("filterBermuda");
   const btnTeamSortName = document.getElementById("teamSortName");
   const btnTeamSortConference = document.getElementById("teamSortConference");
+  const btnTeamSortSurface = document.getElementById("teamSortSurface");
 
   // case insensitive partial search on Enter
   search.addEventListener("keydown", e => {
@@ -72,7 +76,8 @@ function wireControls() {
     all: btnAllTeams,
     afc: btnAfc,
     nfc: btnNfc,
-    nfcNorth: btnNfcNorth
+    nfcNorth: btnNfcNorth,
+    bermuda: btnBermuda
   };
 
   const updateFilterButtons = key => {
@@ -93,11 +98,13 @@ function wireControls() {
   btnAfc?.addEventListener("click", () => applyFilter("afc"));
   btnNfc?.addEventListener("click", () => applyFilter("nfc"));
   btnNfcNorth?.addEventListener("click", () => applyFilter("nfcNorth"));
+  btnBermuda?.addEventListener("click", () => applyFilter("bermuda"));
   updateFilterButtons(currentTeamFilterKey);
 
   const teamSortButtons = {
     name: btnTeamSortName,
-    conference: btnTeamSortConference
+    conference: btnTeamSortConference,
+    surface: btnTeamSortSurface
   };
 
   const updateTeamSortButtons = key => {
@@ -116,6 +123,7 @@ function wireControls() {
 
   btnTeamSortName?.addEventListener("click", () => applyTeamSort("name"));
   btnTeamSortConference?.addEventListener("click", () => applyTeamSort("conference"));
+  btnTeamSortSurface?.addEventListener("click", () => applyTeamSort("surface"));
   updateTeamSortButtons(currentTeamSortKey);
 
   const tabButtons = document.querySelectorAll("[data-tab-target]");

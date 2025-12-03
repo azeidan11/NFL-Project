@@ -152,10 +152,20 @@ export function getTeamsSorted(conference = "ALL") {
 
 export function getTeamsFiltered(options = {}) {
   const opts = options ?? {};
-  const { conference = "ALL", division } = opts;
+  const { conference = "ALL", division, surface } = opts;
   const teams = getTeamsSorted(conference);
-  if (!division) return teams;
-  return teams.filter(team => team.division === division);
+  let filtered = teams;
+  if (division) {
+    filtered = filtered.filter(team => team.division === division);
+  }
+  if (surface) {
+    const target = normalizeSurface(surface);
+    filtered = filtered.filter(team => {
+      const st = getStadiumById(team.stadiumId);
+      return normalizeSurface(st?.surface ?? "").includes(target);
+    });
+  }
+  return filtered;
 }
 
 export function getTeamByName(name) {
@@ -462,4 +472,23 @@ export function getTotalStadiumCapacity() {
     }
   });
   return total;
+}
+
+function normalizeSurface(value = "") {
+  return value.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export function countTeamsBySurface(surface) {
+  if (!surface) return 0;
+  const target = normalizeSurface(surface);
+  let count = 0;
+  mapByTeamName.sortedKeys().forEach(name => {
+    const team = mapByTeamName.find(name);
+    const st = getStadiumById(team?.stadiumId);
+    if (!st?.surface) return;
+    if (normalizeSurface(st.surface).includes(target)) {
+      count += 1;
+    }
+  });
+  return count;
 }

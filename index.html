@@ -32,6 +32,7 @@
               <button id="filterAFC">AFC</button>
               <button id="filterNFC">NFC</button>
               <button id="filterNfcNorth">NFC North</button>
+              <button id="filterBermuda">Bermuda Grass</button>
             </div>
           </div>
           <div class="control-group">
@@ -39,6 +40,7 @@
             <div class="button-group team-sort-buttons">
               <button id="teamSortName" class="active">Sort A-Z</button>
               <button id="teamSortConference">Sort by Conference</button>
+              <button id="teamSortSurface">Surface (Bermuda first)</button>
             </div>
           </div>
         </div>
@@ -54,22 +56,24 @@
       </div>
 
       <div class="tab-panel active" data-tab="teams">
-        <section class="panel">
-          <h2>Teams</h2>
-          <p class="muted">Click a row to view details and souvenirs.</p>
-          <table id="team-table" data-clickable="true">
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>Stadium</th>
-                <th>Conference</th>
-                <th>Division</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </section>
+       <section class="panel">
+         <h2>Teams</h2>
+         <p class="muted">Click a row to view details and souvenirs.</p>
+         <p class="muted" id="bermudaTeamCount">Counting Bermuda grass teams...</p>
+         <table id="team-table" data-clickable="true">
+           <thead>
+             <tr>
+               <th>Team</th>
+               <th>Stadium</th>
+               <th>Conference</th>
+               <th>Division</th>
+               <th>Location</th>
+               <th>Surface</th>
+             </tr>
+           </thead>
+           <tbody></tbody>
+         </table>
+       </section>
 
         <section class="panel" id="team-detail">
           <h2>Team Detail</h2>
@@ -203,10 +207,9 @@
           </div>
           <div id="adminContent" hidden>
             <section class="panel" style="padding:10px;">
-              <h3>Add team(s) from CSV</h3>
-              <p class="muted">Upload the provided input file to add new teams and stadiums (default souvenirs applied).</p>
+              <h3>Import teams</h3>
+              <p class="muted">Use the provided CSV (NFL_Information.csv) to load teams and stadiums with default souvenirs.</p>
               <div class="button-group" style="align-items:center;">
-                <input type="file" id="adminTeamFile" accept=".csv" />
                 <button id="adminAddTeamBtn">Import Teams</button>
               </div>
             </section>
