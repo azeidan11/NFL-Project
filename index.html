@@ -152,8 +152,11 @@
               </div>
               <label class="control-label" for="customStartSelect">Start team</label>
               <select id="customStartSelect"></select>
-              <label class="control-label" for="customTeamList">Teams to include</label>
-              <input id="customTeamList" placeholder="Example: Chiefs, Raiders, Broncos" />
+              <div class="chip-row-header">
+                <span class="control-label">Teams to include</span>
+                <button type="button" class="ghost-btn" id="customTeamClear">Clear</button>
+              </div>
+              <div id="customTeamChoices" class="chip-choices"></div>
             </div>
 
             <div class="trip-card trip-card--stack">
@@ -173,6 +176,10 @@
           </div>
 
           <div id="tripResults"><div class="content muted">Select a trip option to begin.</div></div>
+          <div id="souvenirTracker" class="souvenir-panel">
+            <h3>Souvenir Tracker</h3>
+            <p class="muted">Run a trip to load stadium stops and track purchases.</p>
+          </div>
         </section>
       </div>
     </main>

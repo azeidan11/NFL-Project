@@ -11,17 +11,44 @@ import {
   bfsFromRams
 } from "./trips.js";
 
-import { mapByTeamName } from "./store.js";
+import { mapByTeamName, getSouvenirsForTeam, getTeamsByStadiumName } from "./store.js";
 
 const resultBox = () =>
   document.querySelector("#tripResults .content") || document.getElementById("tripResults");
+const souvenirState = new Map(); // stadiumName -> [{ name, price, qty }]
+const customTeamSelection = new Set();
 
 function formatMiles(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "N/A";
   return `${value.toLocaleString()} miles`;
 }
 
-function renderResult(title, steps, total, note) {
+function uniqueStadiumOrder(list = []) {
+  const seen = new Set();
+  const ordered = [];
+  list.forEach(item => {
+    if (!item || seen.has(item)) return;
+    seen.add(item);
+    ordered.push(item);
+  });
+  return ordered;
+}
+
+function buildStadiumOrderFromLegs(legs = []) {
+  const ordered = [];
+  legs.forEach(leg => {
+    const path = Array.isArray(leg.path) ? leg.path : [];
+    path.forEach((stadium, idx) => {
+      if (idx === 0 && ordered[ordered.length - 1] === stadium) return;
+      if (!stadium) return;
+      if (ordered.includes(stadium)) return;
+      ordered.push(stadium);
+    });
+  });
+  return ordered;
+}
+
+function renderResult(title, steps, total, note, stadiumOrder = []) {
   const root = resultBox();
   if (!root) return;
 
@@ -55,6 +82,134 @@ function renderResult(title, steps, total, note) {
     </div>
     <ul class="result-steps">${listItems}</ul>
   `;
+
+  renderSouvenirTracker(uniqueStadiumOrder(stadiumOrder));
+}
+
+function renderSouvenirTracker(stadiumOrder = []) {
+  const panel = document.getElementById("souvenirTracker");
+  if (!panel) return;
+
+  souvenirState.clear();
+
+  if (!stadiumOrder.length) {
+    panel.innerHTML = `
+      <h3>Souvenir Tracker</h3>
+      <p class="muted">Run a trip to load stadium stops and track purchases.</p>
+    `;
+    return;
+  }
+
+  const cards = stadiumOrder
+    .map(stadium => {
+      const teams = getTeamsByStadiumName(stadium);
+      const teamForSouvenirs = teams?.[0];
+      const souvenirs = teamForSouvenirs ? getSouvenirsForTeam(teamForSouvenirs.name) : [];
+      const options = souvenirs
+        .map(item => `<option value="${item.name}" data-price="${item.price}">${item.name} - $${item.price.toFixed(2)}</option>`)
+        .join("");
+      if (souvenirs.length) {
+        souvenirState.set(stadium, []);
+      }
+      return `
+        <div class="souvenir-card" data-stadium="${stadium}">
+          <div class="souvenir-card__header">
+            <div>
+              <h4>${stadium}</h4>
+              <p class="muted">${teams?.length ? `Teams: ${teams.map(t => t.name).join(", ")}` : "No team mapping found"}</p>
+            </div>
+            <div class="pill pill--accent" data-total-label="${stadium}">$0.00</div>
+          </div>
+          ${
+            souvenirs.length
+              ? `
+            <div class="souvenir-form" data-form="${stadium}">
+              <label class="control-label" for="souvenir-${stadium}">Select souvenir</label>
+              <select id="souvenir-${stadium}">
+                ${options}
+              </select>
+              <label class="control-label" for="souvenir-qty-${stadium}">Quantity</label>
+              <input id="souvenir-qty-${stadium}" type="number" min="1" value="1" />
+              <button type="button" data-add="${stadium}">Add to cart</button>
+            </div>
+            <ul class="souvenir-list" data-list="${stadium}"></ul>
+          `
+              : `<p class="muted">No souvenirs available for this stop.</p>`
+          }
+        </div>
+      `;
+    })
+    .join("");
+
+  panel.innerHTML = `
+    <h3>Souvenir Tracker</h3>
+    <p class="muted">Add purchases for each stop; we will total them up automatically.</p>
+    <div class="souvenir-grid">
+      ${cards}
+    </div>
+    <div class="souvenir-grand">
+      <span>Grand Total</span>
+      <strong id="souvenirGrandTotal">$0.00</strong>
+    </div>
+  `;
+
+  panel.querySelectorAll("[data-add]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const stadium = btn.getAttribute("data-add");
+      const select = panel.querySelector(`#souvenir-${CSS.escape(stadium)}`);
+      const qtyInput = panel.querySelector(`#souvenir-qty-${CSS.escape(stadium)}`);
+      if (!select || !qtyInput) return;
+      const name = select.value;
+      const price = Number(select.options[select.selectedIndex]?.dataset?.price ?? 0);
+      const qty = Math.max(1, Number(qtyInput.value) || 1);
+      addSouvenir(stadium, name, price, qty);
+    });
+  });
+
+  updateSouvenirTotals();
+}
+
+function addSouvenir(stadium, name, price, qty) {
+  if (!stadium || !name || !Number.isFinite(price) || qty <= 0) return;
+  const current = souvenirState.get(stadium) ?? [];
+  const existing = current.find(item => item.name === name);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    current.push({ name, price, qty });
+  }
+  souvenirState.set(stadium, current);
+  updateSouvenirTotals();
+}
+
+function updateSouvenirTotals() {
+  const panel = document.getElementById("souvenirTracker");
+  if (!panel) return;
+
+  let grand = 0;
+  souvenirState.forEach((items, stadium) => {
+    const listEl = panel.querySelector(`[data-list="${CSS.escape(stadium)}"]`);
+    const totalLabel = panel.querySelector(`[data-total-label="${CSS.escape(stadium)}"]`);
+    let subtotal = 0;
+    if (items && listEl) {
+      listEl.innerHTML = items
+        .map(item => {
+          const line = item.price * item.qty;
+          subtotal += line;
+          return `<li><strong>${item.qty}x</strong> ${item.name} <span class="muted">$${line.toFixed(2)}</span></li>`;
+        })
+        .join("");
+    }
+    if (totalLabel) {
+      totalLabel.textContent = `$${subtotal.toFixed(2)}`;
+    }
+    grand += subtotal;
+  });
+
+  const grandEl = panel.querySelector("#souvenirGrandTotal");
+  if (grandEl) {
+    grandEl.textContent = `$${grand.toFixed(2)}`;
+  }
 }
 
 // Populate team dropdowns
@@ -63,12 +218,40 @@ export function initTripUI() {
 
   const orderedSelect = document.getElementById("orderedTripSelect");
   const customStart = document.getElementById("customStartSelect");
+  const customChoices = document.getElementById("customTeamChoices");
+  const customClear = document.getElementById("customTeamClear");
 
   if (orderedSelect) {
     orderedSelect.innerHTML = teamNames.map(t => `<option>${t}</option>`).join("");
   }
   if (customStart) {
     customStart.innerHTML = teamNames.map(t => `<option>${t}</option>`).join("");
+  }
+  if (customChoices) {
+    customChoices.innerHTML = teamNames
+      .map(
+        name => `<button type="button" class="chip-choice" data-team="${name}">${name}</button>`
+      )
+      .join("");
+    customChoices.querySelectorAll(".chip-choice").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const team = btn.getAttribute("data-team");
+        if (!team) return;
+        if (customTeamSelection.has(team)) {
+          customTeamSelection.delete(team);
+          btn.classList.remove("selected");
+        } else {
+          customTeamSelection.add(team);
+          btn.classList.add("selected");
+        }
+      });
+    });
+  }
+  if (customClear) {
+    customClear.addEventListener("click", () => {
+      customTeamSelection.clear();
+      customChoices?.querySelectorAll(".chip-choice").forEach(btn => btn.classList.remove("selected"));
+    });
   }
 
   wireButtons();
@@ -96,7 +279,8 @@ function wireButtons() {
         })
         .filter(Boolean),
       res.distance,
-      `Destination: ${dest}`
+      `Destination: ${dest}`,
+      res.path
     );
   });
 
@@ -117,7 +301,8 @@ function wireButtons() {
         distance: l.distance
       })),
       res.totalDistance,
-      `Order: ${list.join(" -> ")}`
+      `Order: ${list.join(" -> ")}`,
+      buildStadiumOrderFromLegs(res.legs)
     );
   });
 
@@ -132,21 +317,21 @@ function wireButtons() {
         distance: l.distance
       })),
       res.totalDistance,
-      "Starts at New England Patriots"
+      "Starts at New England Patriots",
+      res.stadiumOrder
     );
   });
 
   // Custom greedy trip
   document.getElementById("btnCustomGreedy")?.addEventListener("click", () => {
     const start = document.getElementById("customStartSelect").value;
-    const input = document.getElementById("customTeamList").value;
-    const list = input.split(",").map(s => s.trim()).filter(s => s.length);
+    const list = Array.from(customTeamSelection);
     if (!start) {
       renderResult("Custom Greedy Trip", [], 0, "Select a starting team.");
       return;
     }
     if (list.length === 0) {
-      renderResult("Custom Greedy Trip", [], 0, "Add at least one team to visit.");
+      renderResult("Custom Greedy Trip", [], 0, "Select at least one team to visit.");
       return;
     }
     const res = greedyTripForTeamSubset(start, list);
@@ -158,7 +343,8 @@ function wireButtons() {
         distance: l.distance
       })),
       res.totalDistance,
-      `Start: ${start}`
+      `Start: ${start}`,
+      res.stadiumOrder
     );
   });
 
@@ -173,7 +359,13 @@ function wireButtons() {
         distance: e.distance
       })),
       res.totalDistance,
-      "Minimum spanning tree across all stadiums"
+      "Minimum spanning tree across all stadiums",
+      uniqueStadiumOrder(
+        res.edges.reduce((acc, e) => {
+          acc.push(e.from, e.to);
+          return acc;
+        }, [])
+      )
     );
   });
 
@@ -188,7 +380,8 @@ function wireButtons() {
         distance: e.distance
       })),
       res.totalDistance,
-      "Depth-first traversal starting at Minnesota Vikings"
+      "Depth-first traversal starting at Minnesota Vikings",
+      res.stadiumOrder
     );
   });
 
@@ -203,7 +396,8 @@ function wireButtons() {
         distance: e.distance
       })),
       res.totalDistance,
-      "Breadth-first traversal starting at Los Angeles Rams (shortest edges first)"
+      "Breadth-first traversal starting at Los Angeles Rams (shortest edges first)",
+      res.stadiumOrder
     );
   });
 }

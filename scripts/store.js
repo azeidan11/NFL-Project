@@ -108,6 +108,20 @@ export function getStadiumById(id) {
   return stadiumById.get(id);
 }
 
+export function getTeamsByStadiumName(stadiumName) {
+  if (!stadiumName) return [];
+  const matches = [];
+  mapByTeamName.sortedKeys().forEach(name => {
+    const team = mapByTeamName.find(name);
+    if (!team) return;
+    const st = getStadiumById(team.stadiumId);
+    if (st?.name === stadiumName) {
+      matches.push(team);
+    }
+  });
+  return matches;
+}
+
 export function getSouvenirsForTeam(teamName) {
   return souvenirsByTeamName.get(teamName) ?? [];
 }
