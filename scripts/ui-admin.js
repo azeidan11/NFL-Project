@@ -3,7 +3,9 @@ import {
   updateSouvenirPriceAll,
   addSouvenirAll,
   deleteSouvenirAll,
-  getSouvenirNames
+  getSouvenirNames,
+  getTeamsSorted,
+  updateTeamStadium
 } from "./store.js";
 import { renderTeamList } from "./ui-team-list.js";
 import { renderStadiumList } from "./ui-stadium-list.js";
@@ -35,6 +37,13 @@ function refreshSouvenirNames() {
   const select = document.getElementById("souvenirNameSelect");
   if (!select) return;
   const names = getSouvenirNames();
+  select.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
+}
+
+function refreshTeamChoices() {
+  const select = document.getElementById("stadiumTeamSelect");
+  if (!select) return;
+  const names = getTeamsSorted().map(t => t.name);
   select.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
 }
 
@@ -120,6 +129,7 @@ export function initAdminUI() {
       unlocked = true;
       toggleAdminContent(true);
       refreshSouvenirNames();
+      refreshTeamChoices();
       setAdminStatus("Unlocked.");
     } else {
       setAdminStatus("Invalid password.", true);
@@ -144,5 +154,40 @@ export function initAdminUI() {
   deleteSouvenirBtn?.addEventListener("click", () => {
     if (!unlocked) return setAdminStatus("Unlock admin first.", true);
     handleDeleteSouvenir();
+  });
+
+  document.getElementById("stadiumUpdateBtn")?.addEventListener("click", () => {
+    if (!unlocked) return setAdminStatus("Unlock admin first.", true);
+    const team = document.getElementById("stadiumTeamSelect")?.value;
+    const name = document.getElementById("stadiumNameInput")?.value?.trim();
+    const capacity = Number(document.getElementById("stadiumCapacityInput")?.value);
+    const roof = document.getElementById("stadiumRoofInput")?.value?.trim();
+    const surface = document.getElementById("stadiumSurfaceInput")?.value?.trim();
+    const opened = Number(document.getElementById("stadiumOpenedInput")?.value);
+    const city = document.getElementById("stadiumCityInput")?.value?.trim();
+    const state = document.getElementById("stadiumStateInput")?.value?.trim();
+
+    if (!team || !name) {
+      setAdminStatus("Select a team and enter a stadium name.", true);
+      return;
+    }
+
+    const { updated } = updateTeamStadium(team, {
+      name,
+      capacity: Number.isFinite(capacity) ? capacity : undefined,
+      roof: roof || undefined,
+      surface: surface || undefined,
+      opened: Number.isFinite(opened) ? opened : undefined,
+      city: city || undefined,
+      state: state || undefined
+    });
+
+    if (updated) {
+      renderTeamList();
+      renderStadiumList();
+      setAdminStatus(`Updated stadium for ${team}.`);
+    } else {
+      setAdminStatus("Failed to update stadium. Check inputs.", true);
+    }
   });
 }

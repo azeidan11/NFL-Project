@@ -178,6 +178,33 @@ export function deleteSouvenirAll(name) {
   return removedAny;
 }
 
+export function updateTeamStadium(teamName, stadiumInfo) {
+  const team = getTeamByName(teamName);
+  if (!team || !stadiumInfo?.name) return { updated: false };
+
+  const existingStadium = getStadiumById(team.stadiumId);
+  const stadiumName = stadiumInfo.name;
+
+  const stadium = {
+    id: stadiumName,
+    name: stadiumName,
+    capacity: typeof stadiumInfo.capacity === "number" ? stadiumInfo.capacity : existingStadium?.capacity,
+    roof: stadiumInfo.roof ?? existingStadium?.roof ?? "",
+    surface: stadiumInfo.surface ?? existingStadium?.surface ?? "",
+    opened: typeof stadiumInfo.opened === "number" ? stadiumInfo.opened : existingStadium?.opened,
+    location: {
+      city: stadiumInfo.city ?? existingStadium?.location?.city ?? "",
+      state: stadiumInfo.state ?? existingStadium?.location?.state ?? ""
+    }
+  };
+
+  stadiumById.set(stadiumName, stadium);
+  team.stadiumId = stadiumName;
+  mapByTeamName.insert(team.name, team);
+
+  return { updated: true, stadium };
+}
+
 export function addTeamsFromCsvText(text) {
   if (!text) return { addedTeams: 0, addedStadiums: 0 };
   const rows = parseCsv(text);

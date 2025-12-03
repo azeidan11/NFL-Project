@@ -236,6 +236,46 @@
                 </div>
               </div>
             </section>
+            <section class="panel" style="padding:10px;">
+              <h3>Update stadium info (team move)</h3>
+              <div class="trip-inputs">
+                <div>
+                  <label class="control-label" for="stadiumTeamSelect">Team</label>
+                  <select id="stadiumTeamSelect"></select>
+                </div>
+                <div>
+                  <label class="control-label" for="stadiumNameInput">Stadium name</label>
+                  <input id="stadiumNameInput" placeholder="New stadium name" />
+                </div>
+                <div>
+                  <label class="control-label" for="stadiumCapacityInput">Capacity</label>
+                  <input id="stadiumCapacityInput" type="number" step="1" placeholder="e.g. 70000" />
+                </div>
+                <div>
+                  <label class="control-label" for="stadiumRoofInput">Roof type</label>
+                  <input id="stadiumRoofInput" placeholder="Open / Retractable / Fixed" />
+                </div>
+                <div>
+                  <label class="control-label" for="stadiumSurfaceInput">Surface</label>
+                  <input id="stadiumSurfaceInput" placeholder="e.g. Grass" />
+                </div>
+                <div>
+                  <label class="control-label" for="stadiumOpenedInput">Opened (year)</label>
+                  <input id="stadiumOpenedInput" type="number" step="1" placeholder="e.g. 2025" />
+                </div>
+                <div class="button-group">
+                  <div style="flex:1;">
+                    <label class="control-label" for="stadiumCityInput">City</label>
+                    <input id="stadiumCityInput" placeholder="City" />
+                  </div>
+                  <div style="flex:1;">
+                    <label class="control-label" for="stadiumStateInput">State</label>
+                    <input id="stadiumStateInput" placeholder="State" />
+                  </div>
+                </div>
+                <button id="stadiumUpdateBtn">Update Stadium</button>
+              </div>
+            </section>
           </div>
         </section>
       </div>
