@@ -3,6 +3,7 @@ import { renderTeamDetail } from "./ui-team-detail.js";
 import { renderStadiumList } from "./ui-stadium-list.js";
 import { ensureStoreLoaded, getTeamsFiltered, NFC_NORTH_FILTER } from "./store.js";
 import { initTripUI } from "./ui-trips.js";
+import { initAdminUI } from "./ui-admin.js";
 
 const TEAM_FILTERS = {
   all: null,
@@ -224,6 +225,7 @@ async function init() {
   renderTeamList({ filter: currentTeamFilter, sortKey: currentTeamSort });
   renderStadiumList({ roofType: currentStadiumFilter, sortKey: currentStadiumSort });
   initTripUI();
+  initAdminUI();
   // renderTeamDetail("Green Bay Packers"); // optional default
 }
 

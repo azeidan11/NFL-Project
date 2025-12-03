@@ -50,6 +50,7 @@
         <button data-tab-target="teams" class="active">Teams</button>
         <button data-tab-target="stadiums">Stadiums</button>
         <button data-tab-target="trips">Trips</button>
+        <button data-tab-target="admin">Admin</button>
       </div>
 
       <div class="tab-panel active" data-tab="teams">
@@ -179,6 +180,62 @@
           <div id="souvenirTracker" class="souvenir-panel">
             <h3>Souvenir Tracker</h3>
             <p class="muted">Run a trip to load stadium stops and track purchases.</p>
+          </div>
+        </section>
+      </div>
+      <div class="tab-panel" data-tab="admin" hidden>
+        <section class="panel" id="admin-panel">
+          <div class="panel-header">
+            <div class="panel-header-title">
+              <h2>Maintenance (Admin)</h2>
+              <p class="muted">Manage teams and traditional souvenirs.</p>
+            </div>
+            <div id="adminGuard">
+              <input id="adminPasswordInput" type="password" placeholder="Admin password" />
+              <button id="adminLoginBtn">Unlock</button>
+              <p class="muted" id="adminStatus">Locked.</p>
+            </div>
+          </div>
+          <div id="adminContent" hidden>
+            <section class="panel" style="padding:10px;">
+              <h3>Add team(s) from CSV</h3>
+              <p class="muted">Upload the provided input file to add new teams and stadiums (default souvenirs applied).</p>
+              <div class="button-group" style="align-items:center;">
+                <input type="file" id="adminTeamFile" accept=".csv" />
+                <button id="adminAddTeamBtn">Import Teams</button>
+              </div>
+            </section>
+            <section class="panel" style="padding:10px;">
+              <h3>Update traditional souvenirs (all teams)</h3>
+              <div class="trip-inputs">
+                <div>
+                  <label class="control-label" for="souvenirNameSelect">Souvenir</label>
+                  <select id="souvenirNameSelect"></select>
+                </div>
+                <div>
+                  <label class="control-label" for="souvenirPriceInput">New price</label>
+                  <input id="souvenirPriceInput" type="number" step="0.01" placeholder="e.g. 29.99" />
+                </div>
+                <button id="souvenirUpdateBtn">Update Price</button>
+              </div>
+            </section>
+            <section class="panel" style="padding:10px;">
+              <h3>Add or delete souvenirs (all teams)</h3>
+              <div class="trip-inputs">
+                <div>
+                  <label class="control-label" for="newSouvenirName">New souvenir name</label>
+                  <input id="newSouvenirName" placeholder="e.g. Team scarf" />
+                </div>
+                <div>
+                  <label class="control-label" for="newSouvenirPrice">Price</label>
+                  <input id="newSouvenirPrice" type="number" step="0.01" placeholder="e.g. 24.99" />
+                </div>
+                <div class="button-group">
+                  <button id="souvenirAddBtn">Add Souvenir</button>
+                  <button id="souvenirDeleteBtn">Delete Selected Souvenir</button>
+                </div>
+              </div>
+            </section>
           </div>
         </section>
       </div>

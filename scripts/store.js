@@ -1,5 +1,6 @@
 import { CustomMap } from "./customMap.js";
 import { loadData } from "./data.js";
+import { parseCsv } from "./csv-utils.js";
 
 // Default souvenir catalog per team
 const DEFAULT_SOUVENIRS = [
@@ -124,6 +125,165 @@ export function getTeamsByStadiumName(stadiumName) {
 
 export function getSouvenirsForTeam(teamName) {
   return souvenirsByTeamName.get(teamName) ?? [];
+}
+
+export function getSouvenirNames() {
+  const names = new Set();
+  souvenirsByTeamName.forEach(list => {
+    list.forEach(item => names.add(item.name));
+  });
+  return Array.from(names).sort((a, b) => a.localeCompare(b));
+}
+
+function applyToAllSouvenirs(fn) {
+  souvenirsByTeamName.forEach((list, team) => {
+    const updated = fn(list.slice());
+    souvenirsByTeamName.set(team, updated);
+  });
+}
+
+export function updateSouvenirPriceAll(name, newPrice) {
+  if (!name || typeof newPrice !== "number" || Number.isNaN(newPrice)) return false;
+  let updatedAny = false;
+  applyToAllSouvenirs(list => {
+    const match = list.find(item => item.name.toLowerCase() === name.toLowerCase());
+    if (match) {
+      match.price = newPrice;
+      updatedAny = true;
+    }
+    return list;
+  });
+  return updatedAny;
+}
+
+export function addSouvenirAll(name, price) {
+  if (!name || typeof price !== "number" || Number.isNaN(price)) return false;
+  applyToAllSouvenirs(list => {
+    if (!list.find(item => item.name.toLowerCase() === name.toLowerCase())) {
+      list.push({ name, price });
+    }
+    return list;
+  });
+  return true;
+}
+
+export function deleteSouvenirAll(name) {
+  if (!name) return false;
+  let removedAny = false;
+  applyToAllSouvenirs(list => {
+    const filtered = list.filter(item => item.name.toLowerCase() !== name.toLowerCase());
+    if (filtered.length !== list.length) removedAny = true;
+    return filtered;
+  });
+  return removedAny;
+}
+
+export function addTeamsFromCsvText(text) {
+  if (!text) return { addedTeams: 0, addedStadiums: 0 };
+  const rows = parseCsv(text);
+  if (!rows.length) return { addedTeams: 0, addedStadiums: 0 };
+  const [headerRow, ...dataRows] = rows;
+  const column = createHeaderLookup(headerRow);
+  const idxTeam = column("Team(s)");
+  const idxStadium = column("Name");
+  const idxCapacity = column("Capacity");
+  const idxLocation = column("Location");
+  const idxRoof = column("Roof Type");
+  const idxSurface = column("Surface");
+  const idxOpened = column("Opened");
+  const idxConference = column("Conference");
+  const idxDivision = column("Division");
+
+  let addedTeams = 0;
+  let addedStadiums = 0;
+
+  dataRows.forEach((row, rowIndex) => {
+    const teamName = (row[idxTeam] || "").trim();
+    const stadiumName = (row[idxStadium] || "").trim();
+    if (!teamName || !stadiumName) return;
+
+    let stadium = stadiumById.get(stadiumName);
+    if (!stadium) {
+      stadium = {
+        id: stadiumName,
+        name: stadiumName,
+        capacity: parseNumber(row[idxCapacity]),
+        roof: (row[idxRoof] || "").trim(),
+        surface: (row[idxSurface] || "").trim(),
+        opened: parseYear(row[idxOpened]),
+        location: parseLocation(row[idxLocation])
+      };
+      stadiumById.set(stadiumName, stadium);
+      addedStadiums += 1;
+    }
+
+    if (!mapByTeamName.find(teamName)) {
+      const team = {
+        id: mapByTeamName.size() + rowIndex + 1,
+        name: teamName,
+        conference: parseConference(row[idxConference]),
+        division: parseDivision(row[idxDivision]),
+        stadiumId: stadium.id
+      };
+      mapByTeamName.insert(team.name, team);
+      if (!souvenirsByTeamName.has(team.name)) {
+        souvenirsByTeamName.set(team.name, DEFAULT_SOUVENIRS.map(item => ({ ...item })));
+      }
+      addedTeams += 1;
+    }
+  });
+
+  return { addedTeams, addedStadiums };
+}
+
+// Parsing helpers (mirrors data.js)
+function createHeaderLookup(headers) {
+  const table = new Map(headers.map((header, idx) => [normalizeKey(header), idx]));
+  return label => {
+    const key = normalizeKey(label);
+    if (!table.has(key)) {
+      throw new Error(`Column "${label}" not found in CSV.`);
+    }
+    return table.get(key);
+  };
+}
+
+function normalizeKey(value = "") {
+  return value.replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
+function parseLocation(value = "") {
+  const [city, state] = value.split(",").map(part => part.trim());
+  return { city: city || "", state: state || "" };
+}
+
+function parseNumber(value) {
+  if (value === undefined || value === null) return undefined;
+  const str = String(value).replace(/,/g, "").trim();
+  if (!str) return undefined;
+  const num = Number(str);
+  return Number.isFinite(num) ? Math.round(num) : undefined;
+}
+
+function parseYear(value) {
+  const num = parseNumber(value);
+  return typeof num === "number" ? num : undefined;
+}
+
+function parseConference(value = "") {
+  const upper = value.toUpperCase();
+  if (upper.includes("AMERICAN")) return "AFC";
+  if (upper.includes("NATIONAL")) return "NFC";
+  const trimmed = value.trim();
+  if (trimmed.length === 3) return trimmed.toUpperCase();
+  return trimmed || "ALL";
+}
+
+function parseDivision(value = "") {
+  const sanitized = value.replace(/[^a-z0-9\s]/gi, " ").trim();
+  if (!sanitized) return "";
+  const parts = sanitized.split(/\s+/);
+  return parts[parts.length - 1];
 }
 
 export function getStadiumNameForTeam(teamName) {
