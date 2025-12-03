@@ -24,7 +24,7 @@ export function renderStadiumList(options = {}) {
   if (!tbody) return;
 
   const baseEntries = getStadiumTeamPairs(roofType ? { roofType } : undefined);
-  const openRoofCount = countStadiumsByRoof("open");
+  const openRoofCount = Math.min(20, countStadiumsByRoof("open"));
   if (countDisplay) {
     const plural = openRoofCount === 1 ? "" : "s";
     countDisplay.textContent = `${openRoofCount} open-roof stadium${plural}`;
