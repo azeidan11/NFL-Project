@@ -38,7 +38,7 @@ export function renderStadiumList(options = {}) {
 
   if (!baseEntries.length) {
     const label = roofType === "open" ? "open-roof stadium data" : "stadium data";
-    tbody.innerHTML = `<tr><td colspan="4" class="muted">No ${label} available.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">No ${label} available.</td></tr>`;
     return;
   }
 
@@ -49,7 +49,7 @@ export function renderStadiumList(options = {}) {
 
   if (!filtered.length) {
     const label = roofType === "open" ? "open-roof stadiums" : "stadiums";
-    tbody.innerHTML = `<tr><td colspan="4" class="muted">No ${label} match "${query}".</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">No ${label} match "${query}".</td></tr>`;
     return;
   }
 
@@ -75,6 +75,9 @@ export function renderStadiumList(options = {}) {
       <td>${formatCapacity(stadium.capacity)}</td>
       <td>${formatTeams(teams)}</td>
       <td>${formatLocation(stadium)}</td>
+      <td>${stadium.surface ?? "N/A"}</td>
+      <td>${stadium.roof ?? "N/A"}</td>
+      <td>${typeof stadium.opened === "number" ? stadium.opened : "N/A"}</td>
     </tr>
   `);
 
