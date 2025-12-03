@@ -178,6 +178,37 @@ export function deleteSouvenirAll(name) {
   return removedAny;
 }
 
+export function addSouvenirForTeam(teamName, name, price) {
+  if (!teamName || !name || typeof price !== "number" || Number.isNaN(price)) return false;
+  if (!souvenirsByTeamName.has(teamName)) return false;
+  const list = souvenirsByTeamName.get(teamName);
+  if (list.find(item => item.name.toLowerCase() === name.toLowerCase())) return false;
+  list.push({ name, price });
+  souvenirsByTeamName.set(teamName, list);
+  return true;
+}
+
+export function deleteSouvenirForTeam(teamName, name) {
+  if (!teamName || !name) return false;
+  if (!souvenirsByTeamName.has(teamName)) return false;
+  const list = souvenirsByTeamName.get(teamName);
+  const filtered = list.filter(item => item.name.toLowerCase() !== name.toLowerCase());
+  const removed = filtered.length !== list.length;
+  souvenirsByTeamName.set(teamName, filtered);
+  return removed;
+}
+
+export function updateSouvenirForTeam(teamName, name, newPrice) {
+  if (!teamName || !name || typeof newPrice !== "number" || Number.isNaN(newPrice)) return false;
+  if (!souvenirsByTeamName.has(teamName)) return false;
+  const list = souvenirsByTeamName.get(teamName);
+  const match = list.find(item => item.name.toLowerCase() === name.toLowerCase());
+  if (!match) return false;
+  match.price = newPrice;
+  souvenirsByTeamName.set(teamName, list);
+  return true;
+}
+
 export function updateTeamStadium(teamName, stadiumInfo) {
   const team = getTeamByName(teamName);
   if (!team || !stadiumInfo?.name) return { updated: false };

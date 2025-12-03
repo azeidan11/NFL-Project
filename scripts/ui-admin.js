@@ -5,7 +5,11 @@ import {
   deleteSouvenirAll,
   getSouvenirNames,
   getTeamsSorted,
-  updateTeamStadium
+  updateTeamStadium,
+  addSouvenirForTeam,
+  deleteSouvenirForTeam,
+  getSouvenirsForTeam,
+  updateSouvenirForTeam
 } from "./store.js";
 import { renderTeamList } from "./ui-team-list.js";
 import { renderStadiumList } from "./ui-stadium-list.js";
@@ -41,10 +45,31 @@ function refreshSouvenirNames() {
 }
 
 function refreshTeamChoices() {
-  const select = document.getElementById("stadiumTeamSelect");
-  if (!select) return;
   const names = getTeamsSorted().map(t => t.name);
-  select.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
+  const selects = [
+    document.getElementById("stadiumTeamSelect"),
+    document.getElementById("teamSouvenirTeamSelect")
+  ];
+  selects.forEach(select => {
+    if (!select) return;
+    select.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
+  });
+  refreshTeamSouvenirNames();
+}
+
+function refreshTeamSouvenirNames() {
+  const teamSelect = document.getElementById("teamSouvenirTeamSelect");
+  const deleteSelect = document.getElementById("teamSouvenirDeleteSelect");
+  const updateSelect = document.getElementById("teamSouvenirUpdateSelect");
+  if (!teamSelect) return;
+  const team = teamSelect.value;
+  const names = getSouvenirsForTeam(team).map(s => s.name);
+  if (deleteSelect) {
+    deleteSelect.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
+  }
+  if (updateSelect) {
+    updateSelect.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
+  }
 }
 
 function handleAddTeamsFromFile() {
@@ -189,5 +214,50 @@ export function initAdminUI() {
     } else {
       setAdminStatus("Failed to update stadium. Check inputs.", true);
     }
+  });
+
+  document.getElementById("teamSouvenirTeamSelect")?.addEventListener("change", () => {
+    if (!unlocked) return;
+    refreshTeamSouvenirNames();
+  });
+
+  document.getElementById("teamSouvenirAddBtn")?.addEventListener("click", () => {
+    if (!unlocked) return setAdminStatus("Unlock admin first.", true);
+    const team = document.getElementById("teamSouvenirTeamSelect")?.value;
+    const name = document.getElementById("teamSouvenirNameInput")?.value?.trim();
+    const price = Number(document.getElementById("teamSouvenirPriceInput")?.value);
+    if (!team || !name || !Number.isFinite(price)) {
+      setAdminStatus("Select a team and enter a valid souvenir name/price.", true);
+      return;
+    }
+    const added = addSouvenirForTeam(team, name, price);
+    refreshTeamSouvenirNames();
+    setAdminStatus(added ? `Added "${name}" for ${team}.` : "Souvenir already exists for that team.", !added);
+  });
+
+  document.getElementById("teamSouvenirDeleteBtn")?.addEventListener("click", () => {
+    if (!unlocked) return setAdminStatus("Unlock admin first.", true);
+    const team = document.getElementById("teamSouvenirTeamSelect")?.value;
+    const name = document.getElementById("teamSouvenirDeleteSelect")?.value;
+    if (!team || !name) {
+      setAdminStatus("Select a team and souvenir to delete.", true);
+      return;
+    }
+    const removed = deleteSouvenirForTeam(team, name);
+    refreshTeamSouvenirNames();
+    setAdminStatus(removed ? `Deleted "${name}" for ${team}.` : "Souvenir not found for that team.", !removed);
+  });
+
+  document.getElementById("teamSouvenirUpdateBtn")?.addEventListener("click", () => {
+    if (!unlocked) return setAdminStatus("Unlock admin first.", true);
+    const team = document.getElementById("teamSouvenirTeamSelect")?.value;
+    const name = document.getElementById("teamSouvenirUpdateSelect")?.value;
+    const price = Number(document.getElementById("teamSouvenirUpdatePriceInput")?.value);
+    if (!team || !name || !Number.isFinite(price)) {
+      setAdminStatus("Select a team, souvenir, and enter a valid price.", true);
+      return;
+    }
+    const updated = updateSouvenirForTeam(team, name, price);
+    setAdminStatus(updated ? `Updated "${name}" price for ${team}.` : "Souvenir not found for that team.", !updated);
   });
 }
