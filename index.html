@@ -139,8 +139,13 @@
                 </div>
                 <button id="btnCustomOrder">Run</button>
               </div>
-              <label class="control-label" for="orderedTripSequence">Team order</label>
-              <input id="orderedTripSequence" placeholder="Example: Bears, Lions, Vikings" />
+              <label class="control-label" for="orderedTripPicker">Add team to order</label>
+              <div class="button-group">
+                <select id="orderedTripPicker"></select>
+                <button type="button" id="orderedTripAddBtn">Add</button>
+                <button type="button" id="orderedTripClearBtn" class="ghost-btn">Clear</button>
+              </div>
+              <ol id="orderedTripList" class="ordered-list muted"></ol>
             </div>
 
             <div class="trip-card">

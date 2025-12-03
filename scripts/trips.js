@@ -5,11 +5,11 @@ import {
 
 /**
  * Internal helper: Dijkstra shortest path between two stadiums (by stadium name).
- * Returns { path: [stadiumName], distance: number }.
+ * Returns { path: [stadiumName], legs: [{from,to,distance}], distance: number }.
  */
 function dijkstraStadiumToStadium(startStadium, targetStadium) {
   if (!startStadium || !targetStadium) {
-    return { path: [], distance: Infinity };
+    return { path: [], legs: [], distance: Infinity };
   }
 
   const dist = new Map();
@@ -46,7 +46,7 @@ function dijkstraStadiumToStadium(startStadium, targetStadium) {
 
   const finalDist = dist.get(targetStadium);
   if (!Number.isFinite(finalDist)) {
-    return { path: [], distance: Infinity };
+    return { path: [], legs: [], distance: Infinity };
   }
 
   const path = [];
@@ -57,7 +57,17 @@ function dijkstraStadiumToStadium(startStadium, targetStadium) {
   }
   path.reverse();
 
-  return { path, distance: finalDist };
+  const legs = [];
+  for (let i = 1; i < path.length; i++) {
+    const from = path[i - 1];
+    const to = path[i];
+    const neighbors = stadiumGraph.get(from) ?? [];
+    const match = neighbors.find(n => n.to === to);
+    const legDistance = match?.distance ?? (dist.get(to) - dist.get(from));
+    legs.push({ from, to, distance: legDistance });
+  }
+
+  return { path, legs, distance: finalDist };
 }
 
 /**
@@ -97,6 +107,10 @@ export function totalDistanceForOrderedTeams(teamNames) {
     const fromStadium = getStadiumNameForTeam(fromTeam);
     const toStadium = getStadiumNameForTeam(toTeam);
     const { path, distance } = dijkstraStadiumToStadium(fromStadium, toStadium);
+    if (!Number.isFinite(distance)) {
+      legs.push({ fromTeam, toTeam, path: [], distance: Infinity });
+      continue;
+    }
     legs.push({ fromTeam, toTeam, path, distance });
     total += distance;
   }

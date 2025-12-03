@@ -17,6 +17,8 @@ const resultBox = () =>
   document.querySelector("#tripResults .content") || document.getElementById("tripResults");
 const souvenirState = new Map(); // stadiumName -> [{ name, price, qty }]
 const customTeamSelection = new Set();
+const orderedSequence = [];
+let wired = false;
 
 function formatMiles(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "N/A";
@@ -217,12 +219,16 @@ export function initTripUI() {
   const teamNames = mapByTeamName.sortedKeys();
 
   const orderedSelect = document.getElementById("orderedTripSelect");
+  const orderedPicker = document.getElementById("orderedTripPicker");
   const customStart = document.getElementById("customStartSelect");
   const customChoices = document.getElementById("customTeamChoices");
   const customClear = document.getElementById("customTeamClear");
 
   if (orderedSelect) {
     orderedSelect.innerHTML = teamNames.map(t => `<option>${t}</option>`).join("");
+  }
+  if (orderedPicker) {
+    orderedPicker.innerHTML = teamNames.map(t => `<option>${t}</option>`).join("");
   }
   if (customStart) {
     customStart.innerHTML = teamNames.map(t => `<option>${t}</option>`).join("");
@@ -254,10 +260,36 @@ export function initTripUI() {
     });
   }
 
+  renderOrderedSequence();
   wireButtons();
 }
 
+function renderOrderedSequence() {
+  const list = document.getElementById("orderedTripList");
+  if (!list) return;
+  if (!orderedSequence.length) {
+    list.innerHTML = `<li class="muted">No teams added yet.</li>`;
+    return;
+  }
+  list.innerHTML = orderedSequence
+    .map((name, idx) => `<li>${idx + 1}. ${name} <button type="button" data-remove-ordered="${idx}">Remove</button></li>`)
+    .join("");
+  list.querySelectorAll("[data-remove-ordered]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.getAttribute("data-remove-ordered"));
+      if (!Number.isInteger(idx)) return;
+      orderedSequence.splice(idx, 1);
+      renderOrderedSequence();
+    });
+  });
+}
+
 function wireButtons() {
+  if (wired) return;
+  wired = true;
+  const teamNames = mapByTeamName.sortedKeys();
+  const nameLookup = new Map(teamNames.map(n => [n.toLowerCase(), n]));
+
   // Dijkstra from Packers
   document.getElementById("btnDijkstra")?.addEventListener("click", () => {
     const dest = document.getElementById("orderedTripSelect").value;
@@ -268,16 +300,11 @@ function wireButtons() {
     const res = shortestTripFromPackersTo(dest);
     renderResult(
       "Shortest Path from Green Bay Packers",
-      res.path
-        .map((stadium, i) => {
-          if (i === 0) return null;
-          return {
-            from: res.path[i - 1],
-            to: stadium,
-            distance: res.distance
-          };
-        })
-        .filter(Boolean),
+      res.legs.map(leg => ({
+        from: leg.from,
+        to: leg.to,
+        distance: leg.distance
+      })),
       res.distance,
       `Destination: ${dest}`,
       res.path
@@ -285,14 +312,52 @@ function wireButtons() {
   });
 
   // Ordered trip (user-defined sequence)
+  document.getElementById("orderedTripAddBtn")?.addEventListener("click", () => {
+    const picker = document.getElementById("orderedTripPicker");
+    const val = picker?.value;
+    if (!val) return;
+    orderedSequence.push(val);
+    renderOrderedSequence();
+  });
+
+  document.getElementById("orderedTripClearBtn")?.addEventListener("click", () => {
+    orderedSequence.splice(0, orderedSequence.length);
+    renderOrderedSequence();
+  });
+
   document.getElementById("btnCustomOrder")?.addEventListener("click", () => {
-    const input = document.getElementById("orderedTripSequence").value;
-    const list = input.split(",").map(s => s.trim()).filter(s => s.length);
-    if (list.length < 2) {
-      renderResult("User Ordered Trip", [], 0, "Enter at least two teams separated by commas.");
+    const rawList = orderedSequence.slice();
+    if (rawList.length < 2) {
+      renderResult("User Ordered Trip", [], 0, "Add at least two teams to the ordered list.");
       return;
     }
-    const res = totalDistanceForOrderedTeams(list);
+
+    const resolved = [];
+    const missing = [];
+    rawList.forEach(name => {
+      const found = nameLookup.get(name.toLowerCase());
+      if (found) {
+        resolved.push(found);
+      } else {
+        missing.push(name);
+      }
+    });
+
+    if (missing.length) {
+      renderResult(
+        "User Ordered Trip",
+        [],
+        0,
+        `Not found: ${missing.join(", ")}. Please use team names from the list.`
+      );
+      return;
+    }
+
+    const res = totalDistanceForOrderedTeams(resolved);
+    if (!res.legs.length) {
+      renderResult("User Ordered Trip", [], 0, "Unable to compute route; check team names.");
+      return;
+    }
     renderResult(
       "User Ordered Trip",
       res.legs.map(l => ({
@@ -301,7 +366,7 @@ function wireButtons() {
         distance: l.distance
       })),
       res.totalDistance,
-      `Order: ${list.join(" -> ")}`,
+      `Order: ${resolved.join(" -> ")}`,
       buildStadiumOrderFromLegs(res.legs)
     );
   });

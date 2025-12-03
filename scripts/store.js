@@ -23,10 +23,31 @@ export const mapByTeamName = new CustomMap();
 export const stadiumById = new Map();
 export const NFC_NORTH_FILTER = { conference: "NFC", division: "North" };
 
+const STORAGE_KEY = "nfl_project_store_v2";
+let cachedDistances = {};
+
 let loadPromise;
 
 async function hydrateStore() {
-  const { teams: teamList, stadiums: stadiumList, distanceMiles } = await loadData();
+  const cached = loadFromStorage();
+  let teamList;
+  let stadiumList;
+  let distanceMiles;
+
+  if (cached) {
+    teamList = cached.teams;
+    stadiumList = cached.stadiums;
+    distanceMiles = cached.distanceMiles ?? {};
+  }
+
+  // Always load fresh data to ensure distance graph completeness
+  const fresh = await loadData();
+  if (!teamList) teamList = fresh.teams;
+  if (!stadiumList) stadiumList = fresh.stadiums;
+  if (!distanceMiles || Object.keys(distanceMiles).length === 0) {
+    distanceMiles = fresh.distanceMiles;
+  }
+  cachedDistances = distanceMiles ?? {};
 
   stadiumList.forEach(st => stadiumById.set(st.id, st));
 
@@ -42,7 +63,7 @@ async function hydrateStore() {
   });
 
   buildStadiumGraph(distanceMiles);
-
+  persistStore();
   return { teamCount: teamList.length, stadiumCount: stadiumList.length };
 }
 
@@ -78,6 +99,42 @@ function buildStadiumGraph(distanceMiles) {
       addEdge(to, from, d);
     });
   });
+}
+
+function persistStore(distanceMilesOverride) {
+  try {
+    const teams = mapByTeamName.sortedKeys().map(name => mapByTeamName.find(name)).filter(Boolean);
+    const stadiums = Array.from(stadiumById.values());
+    const souvenirs = {};
+    souvenirsByTeamName.forEach((list, team) => {
+      souvenirs[team] = list;
+    });
+    const dist = distanceMilesOverride ?? cachedDistances ?? {};
+    cachedDistances = dist;
+    const data = { teams, stadiums, distanceMiles: dist };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, souvenirs }));
+  } catch (err) {
+    console.warn("Failed to persist store:", err);
+  }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.data?.teams || !parsed?.data?.stadiums) return null;
+    const { teams, stadiums, distanceMiles } = parsed.data;
+    const souvenirs = parsed.souvenirs ?? {};
+    Object.entries(souvenirs).forEach(([team, list]) => {
+      souvenirsByTeamName.set(team, list);
+    });
+    cachedDistances = distanceMiles ?? {};
+    return { teams, stadiums, distanceMiles };
+  } catch (err) {
+    console.warn("Failed to load store from storage:", err);
+    return null;
+  }
 }
 
 // Helpers
@@ -153,6 +210,7 @@ export function updateSouvenirPriceAll(name, newPrice) {
     }
     return list;
   });
+  if (updatedAny) persistStore();
   return updatedAny;
 }
 
@@ -164,6 +222,7 @@ export function addSouvenirAll(name, price) {
     }
     return list;
   });
+  persistStore();
   return true;
 }
 
@@ -175,6 +234,7 @@ export function deleteSouvenirAll(name) {
     if (filtered.length !== list.length) removedAny = true;
     return filtered;
   });
+  if (removedAny) persistStore();
   return removedAny;
 }
 
@@ -185,6 +245,7 @@ export function addSouvenirForTeam(teamName, name, price) {
   if (list.find(item => item.name.toLowerCase() === name.toLowerCase())) return false;
   list.push({ name, price });
   souvenirsByTeamName.set(teamName, list);
+  persistStore();
   return true;
 }
 
@@ -195,6 +256,7 @@ export function deleteSouvenirForTeam(teamName, name) {
   const filtered = list.filter(item => item.name.toLowerCase() !== name.toLowerCase());
   const removed = filtered.length !== list.length;
   souvenirsByTeamName.set(teamName, filtered);
+  if (removed) persistStore();
   return removed;
 }
 
@@ -206,6 +268,7 @@ export function updateSouvenirForTeam(teamName, name, newPrice) {
   if (!match) return false;
   match.price = newPrice;
   souvenirsByTeamName.set(teamName, list);
+  persistStore();
   return true;
 }
 
@@ -233,6 +296,7 @@ export function updateTeamStadium(teamName, stadiumInfo) {
   team.stadiumId = stadiumName;
   mapByTeamName.insert(team.name, team);
 
+  persistStore();
   return { updated: true, stadium };
 }
 
