@@ -30,23 +30,15 @@ let loadPromise;
 
 async function hydrateStore() {
   const cached = loadFromStorage();
-  let teamList;
-  let stadiumList;
-  let distanceMiles;
+  let teamList = cached?.teams ?? null;
+  let stadiumList = cached?.stadiums ?? null;
+  let distanceMiles = cached?.distanceMiles ?? null;
 
-  if (cached) {
-    teamList = cached.teams;
-    stadiumList = cached.stadiums;
-    distanceMiles = cached.distanceMiles ?? {};
-  }
-
-  // Always load fresh data to ensure distance graph completeness
+  // Always load fresh data to ensure new teams/stadiums/distances are merged in
   const fresh = await loadData();
-  if (!teamList) teamList = fresh.teams;
-  if (!stadiumList) stadiumList = fresh.stadiums;
-  if (!distanceMiles || Object.keys(distanceMiles).length === 0) {
-    distanceMiles = fresh.distanceMiles;
-  }
+  teamList = mergeEntitiesByKey(teamList, fresh.teams, team => team.name);
+  stadiumList = mergeEntitiesByKey(stadiumList, fresh.stadiums, stadium => stadium.id);
+  distanceMiles = mergeDistanceMaps(distanceMiles, fresh.distanceMiles);
   cachedDistances = distanceMiles ?? {};
 
   stadiumList.forEach(st => stadiumById.set(st.id, st));
@@ -416,6 +408,45 @@ function parseDivision(value = "") {
   if (!sanitized) return "";
   const parts = sanitized.split(/\s+/);
   return parts[parts.length - 1];
+}
+
+function mergeEntitiesByKey(existing, fresh, keySelector) {
+  const freshList = Array.isArray(fresh) ? fresh.slice() : [];
+  if (!Array.isArray(existing) || existing.length === 0) {
+    return freshList;
+  }
+  const keyFn = typeof keySelector === "function" ? keySelector : (item => item?.[keySelector]);
+  const map = new Map();
+  existing.forEach(item => {
+    const key = keyFn(item);
+    if (key) {
+      map.set(key, item);
+    }
+  });
+  freshList.forEach(item => {
+    const key = keyFn(item);
+    if (!key || map.has(key)) return;
+    map.set(key, item);
+  });
+  return Array.from(map.values());
+}
+
+function mergeDistanceMaps(existing, fresh) {
+  const result = {};
+  if (existing && typeof existing === "object") {
+    Object.entries(existing).forEach(([team, edges]) => {
+      result[team] = Array.isArray(edges) ? edges.slice() : [];
+    });
+  }
+  if (!fresh || typeof fresh !== "object") {
+    return result;
+  }
+  Object.entries(fresh).forEach(([team, edges]) => {
+    if (!Array.isArray(result[team]) || result[team].length === 0) {
+      result[team] = Array.isArray(edges) ? edges.slice() : [];
+    }
+  });
+  return result;
 }
 
 export function getStadiumNameForTeam(teamName) {

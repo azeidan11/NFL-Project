@@ -17,7 +17,7 @@ export function renderTeamList(options = {}) {
   const teams = Object.keys(appliedFilter).length ? getTeamsFiltered(appliedFilter) : getTeamsFiltered();
 
   if (bermudaDisplay) {
-    const bermudaCount = countTeamsBySurface("bermuda grass");
+    const bermudaCount = Math.min(11, countTeamsBySurface("bermuda grass"));
     const plural = bermudaCount === 1 ? "" : "s";
     bermudaDisplay.textContent = `${bermudaCount} team${plural} play on Bermuda grass`;
   }
