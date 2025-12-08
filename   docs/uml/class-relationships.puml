@@ -1,0 +1,64 @@
+@startuml
+title NFL Project – Composition & Inheritance Diagram
+
+' =====================
+'      COMPOSITION
+' =====================
+
+class Team {
+  +name: string
+  +conference: string
+  +division: string
+}
+
+class SouvenirList {
+  +items: List<Souvenir>
+}
+
+class Souvenir {
+  +name: string
+  +price: number
+}
+
+' Team "owns" its souvenir list
+Team *-- SouvenirList
+SouvenirList *-- Souvenir
+
+' Store fully owns (composes) its internal maps
+class Store {
+  +teams: CustomMap
+  +stadiums: CustomMap
+  +souvenirs: CustomMap
+}
+
+class CustomMap {
+  +insert()
+  +find()
+  +erase()
+}
+
+Store *-- CustomMap
+
+' =====================
+'      INHERITANCE
+' =====================
+
+abstract class TripAlgorithm {
+  +planTrip(): TripResult
+}
+
+class DijkstraTrip
+class OrderedTrip
+class GreedyTrip
+class MstTrip
+class DfsTrip
+class BfsTrip
+
+DijkstraTrip --|> TripAlgorithm
+OrderedTrip --|> TripAlgorithm
+GreedyTrip --|> TripAlgorithm
+MstTrip --|> TripAlgorithm
+DfsTrip --|> TripAlgorithm
+BfsTrip --|> TripAlgorithm
+
+@enduml

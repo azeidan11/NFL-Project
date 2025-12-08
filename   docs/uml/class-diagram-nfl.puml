@@ -1,0 +1,105 @@
+@startuml
+title NFL Trip Planner - Core Class Diagram
+
+' Actors
+class Fan {
+}
+
+class Admin {
+  +login(password : string) : bool
+}
+
+Admin --|> Fan
+
+' Core domain classes
+class Team {
+  +id : int
+  +name : string
+  +conference : string
+  +division : string
+  +stadiumId : string
+}
+
+class Stadium {
+  +id : string
+  +name : string
+  +capacity : int
+  +roof : string
+  +surface : string
+  +city : string
+  +state : string
+}
+
+class Souvenir {
+  +name : string
+  +price : double
+}
+
+' Trips and graph
+class Trip {
+  +id : int
+  +startTeam : Team
+  +selectedTeams : List<Team>
+  +totalDistance : double
+}
+
+class DistanceEdge {
+  +fromStadium : string
+  +toStadium : string
+  +distance : double
+}
+
+class StadiumGraph {
+  +edges : List<DistanceEdge>
+  +addEdge(from : string, to : string, d : double)
+  +neighbors(stadium : string) : List<DistanceEdge>
+}
+
+class TripPlanner {
+  +shortestFromPackers(target : Team) : Trip
+  +orderedTrip(teams : List<Team>) : Trip
+  +patriotsGreedyTrip() : Trip
+  +greedySubsetTrip(start : Team, targets : List<Team>) : Trip
+  +computeMst() : List<DistanceEdge>
+  +dfsFromVikings() : Trip
+  +bfsFromRams() : Trip
+}
+
+' Data store / map wrapper
+class Store {
+  +mapByTeamName : CustomMap
+  +stadiumById : Map
+  +souvenirsByTeam : Map
+  +loadData()
+  +getTeamByName(name : string) : Team
+  +getStadiumById(id : string) : Stadium
+  +getSouvenirsForTeam(teamName : string) : List<Souvenir>
+}
+
+class CustomMap {
+  -buckets : List<List<Entry>>
+  -keyList : List<string>
+  +insert(key : string, value : any) : bool
+  +find(key : string) : any
+  +erase(key : string) : bool
+  +sortedKeys() : List<string>
+}
+
+' Relationships
+
+Fan --> TripPlanner : uses
+Admin --> Store : maintains
+TripPlanner --> Store
+TripPlanner --> StadiumGraph
+
+Store "1" o-- "0..*" Team
+Store "1" o-- "0..*" Stadium
+Store "1" o-- "0..*" Souvenir
+
+Team "1" --> "1" Stadium : plays at
+Team "1" o-- "0..*" Souvenir : team souvenirs
+
+StadiumGraph "1" o-- "0..*" DistanceEdge
+Trip "1" o-- "1..*" DistanceEdge : legs
+
+@enduml
